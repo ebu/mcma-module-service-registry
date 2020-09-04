@@ -1,0 +1,1 @@
+# mcma-module-service-registry

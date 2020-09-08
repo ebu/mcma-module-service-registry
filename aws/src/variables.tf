@@ -19,8 +19,20 @@ variable "log_group_name" {
 
 variable "tags" {
   type        = object({})
-  description = "Tags to be applied to created resources"
+  description = "Tags applied to created resources"
   default     = {}
+}
+
+variable "api_gateway_metrics_enabled" {
+  type        = bool
+  description = "Enable API Gateway metrics"
+  default     = false
+}
+
+variable "xray_tracing_enabled" {
+  type        = bool
+  description = "Enable X-Ray tracing"
+  default     = false
 }
 
 #########################

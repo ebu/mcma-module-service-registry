@@ -1,6 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 task copyModuleJSON(type: Copy) {
+    inputs.file "${project.rootDir}/version.properties"
     from "module.json"
     into "build/staging"
     def props = new Properties()

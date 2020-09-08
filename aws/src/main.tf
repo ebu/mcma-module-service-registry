@@ -110,6 +110,11 @@ resource "aws_dynamodb_table" "service_table" {
 #################################
 
 resource "aws_lambda_function" "api_handler" {
+  depends_on = [
+    aws_iam_policy.lambda_execution,
+    aws_iam_role_policy_attachment.lambda_execution
+  ]
+
   filename         = "${path.module}/lambdas/api-handler.zip"
   function_name    = format("%.64s", replace("${var.module_prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
   role             = aws_iam_role.lambda_execution.arn
@@ -126,7 +131,7 @@ resource "aws_lambda_function" "api_handler" {
   }
 
   tracing_config {
-    mode = "Active"
+    mode = var.xray_tracing_enabled ? "Active" : "PassThrough"
   }
 
   tags = var.tags
@@ -237,7 +242,7 @@ resource "aws_api_gateway_deployment" "service_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.service_api.id
 }
 
-resource "aws_api_gateway_stage" "service_registry_gateway_stage" {
+resource "aws_api_gateway_stage" "service_gateway_stage" {
   stage_name    = var.stage_name
   deployment_id = aws_api_gateway_deployment.service_api_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.service_api.id
@@ -250,6 +255,16 @@ resource "aws_api_gateway_stage" "service_registry_gateway_stage" {
   tags = var.tags
 }
 
+resource "aws_api_gateway_method_settings" "service_gateway_settings" {
+  rest_api_id = aws_api_gateway_rest_api.service_api.id
+  stage_name  = aws_api_gateway_stage.service_gateway_stage.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled = var.api_gateway_metrics_enabled
+    logging_level   = "INFO"
+  }
+}
 
 locals {
   service_url       = "https://${aws_api_gateway_rest_api.service_api.id}.execute-api.${var.aws_region}.amazonaws.com/${var.stage_name}"

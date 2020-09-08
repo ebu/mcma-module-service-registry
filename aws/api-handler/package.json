@@ -1,0 +1,26 @@
+{
+    "name": "service-registry-api-handler",
+    "version": "0.0.0",
+    "description": "API gateway request handler for Service Registry",
+    "private": true,
+    "engines": {
+        "node": "~12.12.55"
+    },
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@mcma/api": "0.13.2",
+        "@mcma/aws-api-gateway": "0.13.2",
+        "@mcma/aws-client": "0.13.2",
+        "@mcma/aws-dynamodb": "0.13.2",
+        "@mcma/aws-logger": "0.13.2",
+        "@mcma/client": "0.13.2",
+        "@mcma/core": "0.13.2",
+        "@mcma/data": "0.13.2",
+        "aws-sdk": "^2.747.0",
+        "aws-xray-sdk": "^3.1.0"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.51",
+        "@types/node": "^12.12.55"
+    }
+}

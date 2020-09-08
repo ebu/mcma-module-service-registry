@@ -1,0 +1,6 @@
+include "aws",
+        "aws:api-handler",
+        "deployment",
+        "scripts",
+        "scripts:post-deploy",
+        "scripts:publish"

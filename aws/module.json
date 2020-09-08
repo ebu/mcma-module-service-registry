@@ -1,0 +1,69 @@
+{
+    "namespace": "@MODULE_NAMESPACE@",
+    "name": "@MODULE_NAME@",
+    "provider": "aws",
+    "version": "@MODULE_VERSION@",
+    "displayName": "Service Registry",
+    "description": "The Service Registry serves as a central 'yellow pages' for services to discover what other services are available.",
+    "inputParameters": [
+        {
+            "name": "module_prefix",
+            "type": "string"
+        },
+        {
+            "name": "stage_name",
+            "type": "string"
+        },
+        {
+            "name": "log_group_name",
+            "type": "string"
+        },
+        {
+            "name": "aws_account_id",
+            "type": "string"
+        },
+        {
+            "name": "aws_region",
+            "type": "string"
+        }
+    ],
+    "outputParameters": [
+        {
+            "name": "auth_type",
+            "type": "string"
+        },
+        {
+            "name": "services_url",
+            "type": "string"
+        },
+        {
+            "name": "job_profiles_url",
+            "type": "string"
+        }
+    ],
+    "deploymentActions": [
+        {
+            "type": "ManagedResource",
+            "data": {
+                "resourceName": "service",
+                "resource": {
+                    "@type": "Service",
+                    "name": "Service Registry",
+                    "resources": [
+                        {
+                            "@type": "ResourceEndpoint",
+                            "resourceType": "Service",
+                            "httpEndpoint": "${services_url}"
+                        },
+                        {
+                            "@type": "ResourceEndpoint",
+                            "resourceType": "JobProfile",
+                            "httpEndpoint": "${job_profiles_url}"
+                        }
+                    ],
+                    "authType": "${auth_type}"
+                }
+            }
+        }
+    ]
+}

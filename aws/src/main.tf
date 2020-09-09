@@ -13,7 +13,7 @@ resource "aws_iam_role" "lambda_execution" {
         Effect    = "Allow"
         Action    = "sts:AssumeRole",
         Principal = {
-          "Service" = "lambda.amazonaws.com"
+          Service = "lambda.amazonaws.com"
         }
       }
     ]
@@ -71,7 +71,7 @@ resource "aws_iam_policy" "lambda_execution" {
           "dynamodb:Update*",
           "dynamodb:PutItem"
         ],
-        Resource = "arn:aws:dynamodb:*:*:table/${aws_dynamodb_table.service_table.name}"
+        Resource = aws_dynamodb_table.service_table.arn
       }
     ]
   })
@@ -106,12 +106,11 @@ resource "aws_dynamodb_table" "service_table" {
 }
 
 #################################
-#  aws_lambda_function : api-handler
+#  aws_lambda_function : api_handler
 #################################
 
 resource "aws_lambda_function" "api_handler" {
   depends_on = [
-    aws_iam_policy.lambda_execution,
     aws_iam_role_policy_attachment.lambda_execution
   ]
 
@@ -243,9 +242,10 @@ resource "aws_api_gateway_deployment" "service_api_deployment" {
 }
 
 resource "aws_api_gateway_stage" "service_gateway_stage" {
-  stage_name    = var.stage_name
-  deployment_id = aws_api_gateway_deployment.service_api_deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.service_api.id
+  stage_name           = var.stage_name
+  deployment_id        = aws_api_gateway_deployment.service_api_deployment.id
+  rest_api_id          = aws_api_gateway_rest_api.service_api.id
+  xray_tracing_enabled = var.xray_tracing_enabled
 
   variables = {
     "TableName" = aws_dynamodb_table.service_table.name
@@ -261,8 +261,8 @@ resource "aws_api_gateway_method_settings" "service_gateway_settings" {
   method_path = "*/*"
 
   settings {
+    logging_level   = var.api_gateway_logging_enabled ? "INFO" : "OFF"
     metrics_enabled = var.api_gateway_metrics_enabled
-    logging_level   = "INFO"
   }
 }
 

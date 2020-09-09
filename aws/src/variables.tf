@@ -23,18 +23,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "api_gateway_metrics_enabled" {
-  type        = bool
-  description = "Enable API Gateway metrics"
-  default     = false
-}
-
-variable "xray_tracing_enabled" {
-  type        = bool
-  description = "Enable X-Ray tracing"
-  default     = false
-}
-
 #########################
 # AWS Variables
 #########################
@@ -59,4 +47,26 @@ variable "iam_policy_path" {
   type        = string
   description = "Path for creation of access policy"
   default     = "/"
+}
+
+#########################
+# Configuration
+#########################
+
+variable "api_gateway_logging_enabled" {
+  type        = bool
+  description = "Enable API Gateway logging"
+  default     = false
+}
+
+variable "api_gateway_metrics_enabled" {
+  type        = bool
+  description = "Enable API Gateway metrics"
+  default     = false
+}
+
+variable "xray_tracing_enabled" {
+  type        = bool
+  description = "Enable X-Ray tracing"
+  default     = false
 }

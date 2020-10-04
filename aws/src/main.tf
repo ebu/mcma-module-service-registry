@@ -194,13 +194,18 @@ resource "aws_lambda_permission" "service_api_default" {
 }
 
 resource "aws_apigatewayv2_stage" "service_api" {
+  depends_on = [
+    aws_apigatewayv2_route.service_api_options,
+    aws_apigatewayv2_route.service_api_default
+  ]
+
   api_id      = aws_apigatewayv2_api.service_api.id
   name        = var.stage_name
   auto_deploy = true
 
   stage_variables = {
-    TableName        = aws_dynamodb_table.service_table.name
-    PublicUrl        = local.service_url
+    TableName = aws_dynamodb_table.service_table.name
+    PublicUrl = local.service_url
   }
 
   default_route_settings {
@@ -220,6 +225,6 @@ resource "aws_apigatewayv2_stage" "service_api" {
 }
 
 locals {
-  service_url        = "${aws_apigatewayv2_api.service_api.api_endpoint}/${var.stage_name}"
+  service_url       = "${aws_apigatewayv2_api.service_api.api_endpoint}/${var.stage_name}"
   service_auth_type = "AWS4"
 }

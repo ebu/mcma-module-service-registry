@@ -25,7 +25,7 @@ module "service_registry_aws" {
 
   aws_account_id = var.aws_account_id
   aws_region     = var.aws_region
-  log_group_name = aws_cloudwatch_log_group.main.name
+  log_group      = aws_cloudwatch_log_group.main
   module_prefix  = "${var.global_prefix}-service-registry"
   stage_name     = var.environment_type
 

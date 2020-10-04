@@ -142,7 +142,7 @@ resource "aws_lambda_function" "api_handler" {
 
 resource "aws_apigatewayv2_api" "service_api" {
   name          = var.module_prefix
-  description   = "Node-RED Workflow Service Rest Api"
+  description   = "Service Registry Rest Api"
   protocol_type = "HTTP"
 
   cors_configuration {

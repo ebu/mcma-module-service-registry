@@ -126,6 +126,8 @@ resource "aws_lambda_function" "api_handler" {
   environment {
     variables = {
       LogGroupName = var.log_group.name
+      TableName    = aws_dynamodb_table.service_table.name
+      PublicUrl    = local.service_url
     }
   }
 
@@ -202,11 +204,6 @@ resource "aws_apigatewayv2_stage" "service_api" {
   api_id      = aws_apigatewayv2_api.service_api.id
   name        = var.stage_name
   auto_deploy = true
-
-  stage_variables = {
-    TableName = aws_dynamodb_table.service_table.name
-    PublicUrl = local.service_url
-  }
 
   default_route_settings {
     data_trace_enabled       = var.xray_tracing_enabled

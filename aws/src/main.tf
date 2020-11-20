@@ -154,7 +154,7 @@ resource "aws_apigatewayv2_api" "service_api" {
   cors_configuration {
     allow_origins = ["*"]
     allow_methods = ["*"]
-    allow_headers = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"]
+    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token"]
   }
 
   tags = var.tags

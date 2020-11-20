@@ -22,7 +22,7 @@ variable "log_group" {
 }
 
 variable "tags" {
-  type        = object({})
+  type        = map(string)
   description = "Tags applied to created resources"
   default     = {}
 }

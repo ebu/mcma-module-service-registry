@@ -3,7 +3,7 @@
 ##################################
 
 resource "aws_iam_role" "lambda_execution" {
-  name               = format("%.64s", "${var.module_prefix}.${var.aws_region}.lambda-execution")
+  name               = format("%.64s", "${var.name}.${var.aws_region}.lambda-execution")
   path               = var.iam_role_path
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
@@ -23,25 +23,16 @@ resource "aws_iam_role" "lambda_execution" {
 }
 
 resource "aws_iam_policy" "lambda_execution" {
-  name        = format("%.128s", "${var.module_prefix}.${var.aws_region}.lambda-execution")
+  name        = format("%.128s", "${var.name}.${var.aws_region}.lambda-execution")
   description = "Policy to write to log"
   path        = var.iam_policy_path
   policy      = jsonencode({
     Version   = "2012-10-17",
-    Statement = [
+    Statement = concat([
       {
         Sid      = "AllowLambdaWritingToLogs"
         Effect   = "Allow",
         Action   = "logs:*",
-        Resource = "*"
-      },
-      {
-        Sid      = "AllowLambdaWritingToXRay"
-        Effect   = "Allow",
-        Action   = [
-          "xray:PutTraceSegments",
-          "xray:PutTelemetryRecords"
-        ],
         Resource = "*"
       },
       {
@@ -73,7 +64,17 @@ resource "aws_iam_policy" "lambda_execution" {
         ],
         Resource = aws_dynamodb_table.service_table.arn
       }
-    ]
+    ],
+    var.xray_tracing_enabled ?
+    [{
+      Sid      = "AllowLambdaWritingToXRay"
+      Effect   = "Allow",
+      Action   = [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+      ],
+      Resource = "*"
+    }]: [])
   })
 }
 
@@ -87,20 +88,23 @@ resource "aws_iam_role_policy_attachment" "lambda_execution" {
 ######################
 
 resource "aws_dynamodb_table" "service_table" {
-  name         = var.module_prefix
+  name         = var.name
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "partition_key"
-  range_key    = "sort_key"
+  hash_key     = "resource_pkey"
+  range_key    = "resource_skey"
 
   attribute {
-    name = "partition_key"
+    name = "resource_pkey"
     type = "S"
   }
 
   attribute {
-    name = "sort_key"
+    name = "resource_skey"
     type = "S"
   }
+
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   tags = var.tags
 }
@@ -115,7 +119,7 @@ resource "aws_lambda_function" "api_handler" {
   ]
 
   filename         = "${path.module}/lambdas/api-handler.zip"
-  function_name    = format("%.64s", replace("${var.module_prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
+  function_name    = format("%.64s", replace("${var.name}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
   role             = aws_iam_role.lambda_execution.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/lambdas/api-handler.zip")
@@ -143,7 +147,7 @@ resource "aws_lambda_function" "api_handler" {
 ##############################
 
 resource "aws_apigatewayv2_api" "service_api" {
-  name          = var.module_prefix
+  name          = var.name
   description   = "Service Registry Rest Api"
   protocol_type = "HTTP"
 

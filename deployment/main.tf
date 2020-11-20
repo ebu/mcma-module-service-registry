@@ -23,13 +23,15 @@ resource "aws_cloudwatch_log_group" "main" {
 module "service_registry_aws" {
   source = "../aws/build/staging"
 
+  name = "${var.global_prefix}-service-registry"
+
+  stage_name = var.environment_type
+
   aws_account_id = var.aws_account_id
   aws_region     = var.aws_region
-  log_group      = aws_cloudwatch_log_group.main
-  module_prefix  = "${var.global_prefix}-service-registry"
-  stage_name     = var.environment_type
 
-  api_gateway_logging_enabled = false
-  api_gateway_metrics_enabled = false
-  xray_tracing_enabled        = false
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_logging_enabled = true
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
 }

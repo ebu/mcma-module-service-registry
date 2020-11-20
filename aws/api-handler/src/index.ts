@@ -1,12 +1,18 @@
 import { APIGatewayProxyEventV2, Context } from "aws-lambda";
+import * as AWSXRay from "aws-xray-sdk-core";
+
 import { JobProfile, Service } from "@mcma/core";
 import { DefaultRouteCollection, McmaApiRouteCollection } from "@mcma/api";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { ApiGatewayApiController } from "@mcma/aws-api-gateway";
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("service-registry-api-handler", process.env.LogGroupName);
-const dbTableProvider = new DynamoDbTableProvider();
+const { LogGroupName } = process.env;
+
+const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+
+const loggerProvider = new AwsCloudWatchLoggerProvider("service-registry-api-handler", LogGroupName, new AWS.CloudWatchLogs());
+const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
 
 const restController =
     new ApiGatewayApiController(

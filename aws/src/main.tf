@@ -127,6 +127,8 @@ resource "aws_lambda_function" "api_handler" {
   timeout          = "30"
   memory_size      = "3008"
 
+  layers = var.enhanced_monitoring_enabled ? [ "arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14" ] : []
+
   environment {
     variables = {
       LogGroupName = var.log_group.name

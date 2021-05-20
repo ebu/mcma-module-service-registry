@@ -3,7 +3,7 @@
 ##################################
 
 resource "aws_iam_role" "lambda_execution" {
-  name               = format("%.64s", "${var.name}.${var.aws_region}.lambda-execution")
+  name               = format("%.64s", "${var.prefix}.${var.aws_region}.lambda-execution")
   path               = var.iam_role_path
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
@@ -23,7 +23,7 @@ resource "aws_iam_role" "lambda_execution" {
 }
 
 resource "aws_iam_policy" "lambda_execution" {
-  name        = format("%.128s", "${var.name}.${var.aws_region}.lambda-execution")
+  name        = format("%.128s", "${var.prefix}.${var.aws_region}.lambda-execution")
   description = "Policy to write to log"
   path        = var.iam_policy_path
   policy      = jsonencode({
@@ -88,7 +88,7 @@ resource "aws_iam_role_policy_attachment" "lambda_execution" {
 ######################
 
 resource "aws_dynamodb_table" "service_table" {
-  name         = var.name
+  name         = var.prefix
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "resource_pkey"
   range_key    = "resource_skey"
@@ -119,7 +119,7 @@ resource "aws_lambda_function" "api_handler" {
   ]
 
   filename         = "${path.module}/lambdas/api-handler.zip"
-  function_name    = format("%.64s", replace("${var.name}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
+  function_name    = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
   role             = aws_iam_role.lambda_execution.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/lambdas/api-handler.zip")
@@ -127,7 +127,7 @@ resource "aws_lambda_function" "api_handler" {
   timeout          = "30"
   memory_size      = "3008"
 
-  layers = var.enhanced_monitoring_enabled ? [ "arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14" ] : []
+  layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
 
   environment {
     variables = {
@@ -149,7 +149,7 @@ resource "aws_lambda_function" "api_handler" {
 ##############################
 
 resource "aws_apigatewayv2_api" "service_api" {
-  name          = var.name
+  name          = var.prefix
   description   = "Service Registry Rest Api"
   protocol_type = "HTTP"
 
@@ -230,4 +230,229 @@ resource "aws_apigatewayv2_stage" "service_api" {
 locals {
   service_url       = "${aws_apigatewayv2_api.service_api.api_endpoint}/${var.stage_name}"
   service_auth_type = "AWS4"
+}
+
+#######################
+# DynamoDB Resources
+#######################
+
+resource "random_uuid" "service_registry" {
+}
+
+resource "aws_dynamodb_table_item" "service_registry" {
+  table_name = aws_dynamodb_table.service_table.name
+  hash_key   = aws_dynamodb_table.service_table.hash_key
+  range_key  = aws_dynamodb_table.service_table.range_key
+
+  item = jsonencode({
+    resource_pkey : {
+      S: "/services"
+    }
+    resource_skey : {
+      S: random_uuid.service_registry.result
+    }
+
+    resource :{
+      M: {
+        "@type": {
+          S: "Service"
+        }
+        id: {
+          S: "${local.service_url}/services/${random_uuid.service_registry.result}"
+        }
+        name: {
+          S: var.name
+        }
+        authType: {
+          S: "AWS4"
+        }
+        resources: {
+          L: [
+            {
+              M: {
+                "@type": {
+                  S: "ResourceEndpoint"
+                }
+                resourceType: {
+                  S: "Service"
+                }
+                httpEndpoint: {
+                  S: "${local.service_url}/services"
+                }
+              }
+            },
+            {
+              M: {
+                "@type": {
+                  S: "ResourceEndpoint"
+                }
+                resourceType: {
+                  S: "JobProfile"
+                }
+                httpEndpoint: {
+                  S: "${local.service_url}/job-profiles"
+                }
+              }
+            },
+          ]
+        }
+      }
+    }
+  })
+}
+
+resource "random_uuid" "job_profiles" {
+  for_each = {for jp in local.job_profiles: jp.name => jp}
+}
+
+resource "aws_dynamodb_table_item" "job_profiles" {
+  for_each = {for jp in local.job_profiles: jp.name => jp}
+
+  table_name = aws_dynamodb_table.service_table.name
+  hash_key   = aws_dynamodb_table.service_table.hash_key
+  range_key  = aws_dynamodb_table.service_table.range_key
+
+  item = jsonencode({
+    resource_pkey: {
+      S: "/job-profiles"
+    }
+    resource_skey: {
+      S: random_uuid.job_profiles[each.key].result
+    }
+    resource: {
+      M: {for k, v in {
+        "@type": {
+          S: "JobProfile"
+        }
+        id: {
+          S: "${local.service_url}/job-profiles/${random_uuid.job_profiles[each.key].result}"
+        }
+        name: {
+          S: each.key
+        }
+        inputParameters: {
+          L: [for p in coalesce(each.value.input_parameters, []) : {
+            M: {
+              "@type": {
+                S: "JobParameter"
+              }
+              parameterName: {
+                S: p.parameter_name
+              }
+              parameterType: {
+                S: p.parameter_type
+              }
+            }
+          }]
+        }
+        optionalInputParameters: {
+          L: [for p in coalesce(each.value.optional_input_parameters, []) : {
+            M: {
+              "@type": {
+                S: "JobParameter"
+              }
+              parameterName: {
+                S: p.parameter_name
+              }
+              parameterType: {
+                S: p.parameter_type
+              }
+            }
+          }]
+        }
+        outputParameters: {
+          L: [for p in coalesce(each.value.output_parameters, []) : {
+            M: {
+              "@type": {
+                S: "JobParameter"
+              }
+              parameterName: {
+                S: p.parameter_name
+              }
+              parameterType: {
+                S: p.parameter_type
+              }
+            }
+          }]
+        }
+      } : k => v if !(
+      k == "inputParameters" && length(each.value.input_parameters) == 0 ||
+      k == "optionalInputParameters" && length(each.value.optional_input_parameters) == 0 ||
+      k == "outputParameters" && length(each.value.output_parameters) == 0)
+      }
+    }
+  })
+}
+
+resource "random_uuid" "services" {
+  for_each = {for s in var.services: s.name => s}
+}
+
+resource "aws_dynamodb_table_item" "services" {
+  for_each = {for s in var.services: s.name => s}
+
+  table_name = aws_dynamodb_table.service_table.name
+  hash_key   = aws_dynamodb_table.service_table.hash_key
+  range_key  = aws_dynamodb_table.service_table.range_key
+
+  item = jsonencode({
+    resource_pkey: {
+      S: "/services"
+    }
+    resource_skey: {
+      S: random_uuid.services[each.key].result
+    }
+    resource: {
+      M: {for k, v in {
+        "@type": {
+          S: "Service"
+        }
+        id: {
+          S: "${local.service_url}/services/${random_uuid.services[each.key].result}"
+        }
+        name: {
+          S: each.key
+        }
+        authType: {
+          S: each.value.auth_type
+        }
+        resources: {
+          L: [for r in each.value.resources : {
+            M: {for k, v in {
+              "@type": {
+                S: "ResourceEndpoint"
+              }
+              resourceType: {
+                S: r.resource_type
+              }
+              httpEndpoint: {
+                S: r.http_endpoint
+              }
+              authType: {
+                S: r.auth_type
+              }
+            } : k => v if !(k == "authType" && r.auth_type == null)
+            }
+          }]
+        }
+        jobType: {
+          S: each.value.job_type
+        }
+        jobProfileIds: {
+          L: [for jp in coalesce(each.value.job_profiles, []): {
+            S: "${local.service_url}/job-profiles/${random_uuid.job_profiles[jp.name].result}"
+          }]
+        }
+      } : k => v if !(
+      k == "authType" && each.value.auth_type == null ||
+      k == "jobType" && each.value.job_type == null ||
+      k == "jobProfileIds" && length(each.value.job_profiles) == 0
+      )
+      }
+    }
+  })
+}
+
+locals {
+  job_profiles = flatten([for service in var.services : [for jp in coalesce(service.job_profiles, []) : jp]])
 }

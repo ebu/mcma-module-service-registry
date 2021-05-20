@@ -1,10 +1,24 @@
+##################################
+# Enable optional variable attributes
+##################################
+
+terraform {
+  experiments = [module_variable_optional_attrs]
+}
+
 #########################
 # Environment Variables
 #########################
 
 variable "name" {
   type        = string
-  description = "Name that serves as prefix for all managed resources in this module"
+  description = "Optional variable to set a custom name for this service in the service registry"
+  default     = "Service Registry"
+}
+
+variable "prefix" {
+  type        = string
+  description = "Prefix for all managed resources in this module"
 }
 
 variable "stage_name" {
@@ -79,4 +93,36 @@ variable "enhanced_monitoring_enabled" {
   type        = bool
   description = "Enable CloudWatch Lambda Insights"
   default     = false
+}
+
+#########################
+# Service Definitions
+#########################
+
+variable "services" {
+  type = list(object({
+    name        = string
+    auth_type    = optional(string)
+    resources   = list(object({
+      http_endpoint = string
+      resource_type = string
+      auth_type     = optional(string)
+    }))
+    job_type     = optional(string)
+    job_profiles = list(object({
+      name                    = string
+      input_parameters         = list(object({
+        parameter_name = string
+        parameter_type = string
+      }))
+      optional_input_parameters = list(object({
+        parameter_name = string
+        parameter_type = string
+      }))
+      output_parameters        = list(object({
+        parameter_name = string
+        parameter_type = string
+      }))
+    }))
+  }))
 }

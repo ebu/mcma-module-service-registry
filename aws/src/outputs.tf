@@ -13,13 +13,13 @@ output "job_profiles_url" {
 # exporting all resources from module
 output "aws_iam_role" {
   value = {
-    lambda_execution: aws_iam_role.lambda_execution
+    lambda_execution: aws_iam_role.api_handler
   }
 }
 
 output "aws_iam_policy" {
   value = {
-    lambda_execution: aws_iam_policy.lambda_execution
+    lambda_execution: aws_iam_policy.api_handler
   }
 }
 

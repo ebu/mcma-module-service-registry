@@ -2,8 +2,8 @@
 # aws_iam_role + aws_iam_policy
 ##################################
 
-resource "aws_iam_role" "lambda_execution" {
-  name               = format("%.64s", "${var.prefix}.${var.aws_region}.lambda-execution")
+resource "aws_iam_role" "api_handler" {
+  name               = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
   path               = var.iam_role_path
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
@@ -22,18 +22,32 @@ resource "aws_iam_role" "lambda_execution" {
   tags = var.tags
 }
 
-resource "aws_iam_policy" "lambda_execution" {
-  name        = format("%.128s", "${var.prefix}.${var.aws_region}.lambda-execution")
-  description = "Policy to write to log"
-  path        = var.iam_policy_path
-  policy      = jsonencode({
+resource "aws_iam_role_policy" "api_handler" {
+  name   = aws_iam_role.api_handler.name
+  role   = aws_iam_role.api_handler.id
+  policy = jsonencode({
     Version   = "2012-10-17",
     Statement = concat([
       {
-        Sid      = "AllowLambdaWritingToLogs"
-        Effect   = "Allow",
-        Action   = "logs:*",
+        Sid      = "DescribeCloudWatchLogs"
+        Effect   = "Allow"
+        Action   = "logs:DescribeLogGroups"
         Resource = "*"
+      },
+      {
+        Sid      = "WriteToCloudWatchLogs"
+        Effect   = "Allow"
+        Action   = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        Resource = concat([
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_01_validate_input.function_name}:*",
+        ], var.enhanced_monitoring_enabled ? [
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*"
+        ] : [])
       },
       {
         Sid      = "ListAndDescribeDynamoDBTables",
@@ -66,21 +80,21 @@ resource "aws_iam_policy" "lambda_execution" {
       }
     ],
     var.xray_tracing_enabled ?
-    [{
-      Sid      = "AllowLambdaWritingToXRay"
-      Effect   = "Allow",
-      Action   = [
-        "xray:PutTraceSegments",
-        "xray:PutTelemetryRecords"
-      ],
-      Resource = "*"
-    }]: [])
+    [
+      {
+        Sid      = "AllowLambdaWritingToXRay"
+        Effect   = "Allow",
+        Action   = [
+          "xray:PutTraceSegments",
+          "xray:PutTelemetryRecords",
+          "xray:GetSamplingRules",
+          "xray:GetSamplingTargets",
+          "xray:GetSamplingStatisticSummaries",
+        ],
+        Resource = "*"
+      }
+    ] : [])
   })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_execution" {
-  role       = aws_iam_role.lambda_execution.id
-  policy_arn = aws_iam_policy.lambda_execution.arn
 }
 
 ######################
@@ -120,10 +134,10 @@ resource "aws_lambda_function" "api_handler" {
 
   filename         = "${path.module}/lambdas/api-handler.zip"
   function_name    = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
-  role             = aws_iam_role.lambda_execution.arn
+  role             = aws_iam_role.api_handler.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/lambdas/api-handler.zip")
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   timeout          = "30"
   memory_size      = "3008"
 
@@ -221,7 +235,7 @@ resource "aws_apigatewayv2_stage" "service_api" {
 
   access_log_settings {
     destination_arn = var.log_group.arn
-    format          = "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"
+    format          = "{ \"requestId\":\"$context.requestId\",\"ip\": \"$context.identity.sourceIp\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"routeKey\":\"$context.routeKey\",\"path\":\"$context.path\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\",\"responseLength\":\"$context.responseLength\" }"
   }
 
   tags = var.tags
@@ -246,51 +260,51 @@ resource "aws_dynamodb_table_item" "service_registry" {
 
   item = jsonencode({
     resource_pkey : {
-      S: "/services"
+      S : "/services"
     }
     resource_skey : {
-      S: random_uuid.service_registry.result
+      S : random_uuid.service_registry.result
     }
 
-    resource :{
-      M: {
-        "@type": {
-          S: "Service"
+    resource : {
+      M : {
+        "@type" : {
+          S : "Service"
         }
-        id: {
-          S: "${local.service_url}/services/${random_uuid.service_registry.result}"
+        id : {
+          S : "${local.service_url}/services/${random_uuid.service_registry.result}"
         }
-        name: {
-          S: var.name
+        name : {
+          S : var.name
         }
-        authType: {
-          S: "AWS4"
+        authType : {
+          S : "AWS4"
         }
-        resources: {
-          L: [
+        resources : {
+          L : [
             {
-              M: {
-                "@type": {
-                  S: "ResourceEndpoint"
+              M : {
+                "@type" : {
+                  S : "ResourceEndpoint"
                 }
-                resourceType: {
-                  S: "Service"
+                resourceType : {
+                  S : "Service"
                 }
-                httpEndpoint: {
-                  S: "${local.service_url}/services"
+                httpEndpoint : {
+                  S : "${local.service_url}/services"
                 }
               }
             },
             {
-              M: {
-                "@type": {
-                  S: "ResourceEndpoint"
+              M : {
+                "@type" : {
+                  S : "ResourceEndpoint"
                 }
-                resourceType: {
-                  S: "JobProfile"
+                resourceType : {
+                  S : "JobProfile"
                 }
-                httpEndpoint: {
-                  S: "${local.service_url}/job-profiles"
+                httpEndpoint : {
+                  S : "${local.service_url}/job-profiles"
                 }
               }
             },
@@ -302,78 +316,85 @@ resource "aws_dynamodb_table_item" "service_registry" {
 }
 
 resource "random_uuid" "job_profiles" {
-  for_each = {for jp in local.job_profiles: jp.name => jp}
+  for_each = {for jp in local.job_profiles : jp.name => jp}
 }
 
 resource "aws_dynamodb_table_item" "job_profiles" {
-  for_each = {for jp in local.job_profiles: jp.name => jp}
+  for_each = {for jp in local.job_profiles : jp.name => jp}
 
   table_name = aws_dynamodb_table.service_table.name
   hash_key   = aws_dynamodb_table.service_table.hash_key
   range_key  = aws_dynamodb_table.service_table.range_key
 
   item = jsonencode({
-    resource_pkey: {
-      S: "/job-profiles"
+    resource_pkey : {
+      S : "/job-profiles"
     }
-    resource_skey: {
-      S: random_uuid.job_profiles[each.key].result
+    resource_skey : {
+      S : random_uuid.job_profiles[each.key].result
     }
-    resource: {
-      M: {for k, v in {
-        "@type": {
-          S: "JobProfile"
+    resource : {
+      M : {
+      for k, v in {
+        "@type" : {
+          S : "JobProfile"
         }
-        id: {
-          S: "${local.service_url}/job-profiles/${random_uuid.job_profiles[each.key].result}"
+        id : {
+          S : "${local.service_url}/job-profiles/${random_uuid.job_profiles[each.key].result}"
         }
-        name: {
-          S: each.key
+        name : {
+          S : each.key
         }
-        inputParameters: {
-          L: [for p in coalesce(each.value.input_parameters, []) : {
-            M: {
-              "@type": {
-                S: "JobParameter"
+        inputParameters : {
+          L : [
+          for p in coalesce(each.value.input_parameters, []) : {
+            M : {
+              "@type" : {
+                S : "JobParameter"
               }
-              parameterName: {
-                S: p.parameter_name
+              parameterName : {
+                S : p.parameter_name
               }
-              parameterType: {
-                S: p.parameter_type
+              parameterType : {
+                S : p.parameter_type
               }
             }
-          }]
+          }
+          ]
         }
-        optionalInputParameters: {
-          L: [for p in coalesce(each.value.optional_input_parameters, []) : {
-            M: {
-              "@type": {
-                S: "JobParameter"
+        optionalInputParameters : {
+          L : [
+          for p in coalesce(each.value.optional_input_parameters, []) : {
+            M : {
+              "@type" : {
+                S : "JobParameter"
               }
-              parameterName: {
-                S: p.parameter_name
+              parameterName : {
+                S : p.parameter_name
               }
-              parameterType: {
-                S: p.parameter_type
+              parameterType : {
+                S : p.parameter_type
               }
             }
-          }]
+          }
+          ]
         }
-        outputParameters: {
-          L: [for p in coalesce(each.value.output_parameters, []) : {
-            M: {
-              "@type": {
-                S: "JobParameter"
+        outputParameters : {
+          L : [
+          for p in coalesce(each.value.output_parameters, []) : {
+            M : {
+              "@type" : {
+                S : "JobParameter"
               }
-              parameterName: {
-                S: p.parameter_name
+              parameterName : {
+                S : p.parameter_name
               }
-              parameterType: {
-                S: p.parameter_type
+              parameterType : {
+                S : p.parameter_type
               }
             }
-          }]
+          }
+          ]
         }
       } : k => v if !(
       k == "inputParameters" && length(each.value.input_parameters) == 0 ||
@@ -385,63 +406,69 @@ resource "aws_dynamodb_table_item" "job_profiles" {
 }
 
 resource "random_uuid" "services" {
-  for_each = {for s in var.services: s.name => s}
+  for_each = {for s in var.services : s.name => s}
 }
 
 resource "aws_dynamodb_table_item" "services" {
-  for_each = {for s in var.services: s.name => s}
+  for_each = {for s in var.services : s.name => s}
 
   table_name = aws_dynamodb_table.service_table.name
   hash_key   = aws_dynamodb_table.service_table.hash_key
   range_key  = aws_dynamodb_table.service_table.range_key
 
   item = jsonencode({
-    resource_pkey: {
-      S: "/services"
+    resource_pkey : {
+      S : "/services"
     }
-    resource_skey: {
-      S: random_uuid.services[each.key].result
+    resource_skey : {
+      S : random_uuid.services[each.key].result
     }
-    resource: {
-      M: {for k, v in {
-        "@type": {
-          S: "Service"
+    resource : {
+      M : {
+      for k, v in {
+        "@type" : {
+          S : "Service"
         }
-        id: {
-          S: "${local.service_url}/services/${random_uuid.services[each.key].result}"
+        id : {
+          S : "${local.service_url}/services/${random_uuid.services[each.key].result}"
         }
-        name: {
-          S: each.key
+        name : {
+          S : each.key
         }
-        authType: {
-          S: each.value.auth_type
+        authType : {
+          S : each.value.auth_type
         }
-        resources: {
-          L: [for r in each.value.resources : {
-            M: {for k, v in {
-              "@type": {
-                S: "ResourceEndpoint"
+        resources : {
+          L : [
+          for r in each.value.resources : {
+            M : {
+            for k, v in {
+              "@type" : {
+                S : "ResourceEndpoint"
               }
-              resourceType: {
-                S: r.resource_type
+              resourceType : {
+                S : r.resource_type
               }
-              httpEndpoint: {
-                S: r.http_endpoint
+              httpEndpoint : {
+                S : r.http_endpoint
               }
-              authType: {
-                S: r.auth_type
+              authType : {
+                S : r.auth_type
               }
             } : k => v if !(k == "authType" && r.auth_type == null)
             }
-          }]
+          }
+          ]
         }
-        jobType: {
-          S: each.value.job_type
+        jobType : {
+          S : each.value.job_type
         }
-        jobProfileIds: {
-          L: [for jp in coalesce(each.value.job_profiles, []): {
-            S: "${local.service_url}/job-profiles/${random_uuid.job_profiles[jp.name].result}"
-          }]
+        jobProfileIds : {
+          L : [
+          for jp in coalesce(each.value.job_profiles, []) : {
+            S : "${local.service_url}/job-profiles/${random_uuid.job_profiles[jp.name].result}"
+          }
+          ]
         }
       } : k => v if !(
       k == "authType" && each.value.auth_type == null ||

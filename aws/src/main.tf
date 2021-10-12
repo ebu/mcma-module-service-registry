@@ -2,8 +2,12 @@
 # aws_iam_role + aws_iam_policy
 ##################################
 
+locals {
+  name_api_handler = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
+}
+
 resource "aws_iam_role" "api_handler" {
-  name               = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
+  name               = local.name_api_handler
   path               = var.iam_role_path
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
@@ -44,7 +48,7 @@ resource "aws_iam_role_policy" "api_handler" {
         ],
         Resource = concat([
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_01_validate_input.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${local.name_api_handler}:*",
         ], var.enhanced_monitoring_enabled ? [
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*"
         ] : [])
@@ -129,11 +133,11 @@ resource "aws_dynamodb_table" "service_table" {
 
 resource "aws_lambda_function" "api_handler" {
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_execution
+    aws_iam_role_policy.api_handler
   ]
 
   filename         = "${path.module}/lambdas/api-handler.zip"
-  function_name    = format("%.64s", replace("${var.prefix}-api-handler", "/[^a-zA-Z0-9_]+/", "-" ))
+  function_name    = local.name_api_handler
   role             = aws_iam_role.api_handler.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/lambdas/api-handler.zip")

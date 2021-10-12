@@ -17,15 +17,9 @@ output "aws_iam_role" {
   }
 }
 
-output "aws_iam_policy" {
+output "aws_iam_role_policy" {
   value = {
-    lambda_execution: aws_iam_policy.api_handler
-  }
-}
-
-output "aws_iam_role_policy_attachment" {
-  value = {
-    lambda_execution: aws_iam_role_policy_attachment.lambda_execution
+    lambda_execution: aws_iam_role_policy.api_handler
   }
 }
 

@@ -3,9 +3,8 @@
 #########################
 
 provider "aws" {
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
-  region     = var.aws_region
+  profile = var.aws_profile
+  region  = var.aws_region
 }
 
 
@@ -35,14 +34,14 @@ module "service_registry_aws" {
   api_gateway_metrics_enabled = true
   xray_tracing_enabled        = true
 
-  services = [ local.service1, local.service2 ]
+  services = [local.service1, local.service2]
 }
 
 locals {
   service1 = {
-    name        = "BenchmarkSTT Service"
+    name         = "BenchmarkSTT Service"
     auth_type    = "AWS4"
-    resources   = [
+    resources    = [
       {
         http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
         resource_type = "JobAssignment"
@@ -51,34 +50,35 @@ locals {
     job_type     = "QAJob"
     job_profiles = [
       {
-        name: "BenchmarkSTT",
-        input_parameters: [
+        name : "BenchmarkSTT",
+        input_parameters : [
           {
-            parameter_name: "inputFile",
-            parameter_type: "Locator"
+            parameter_name : "inputFile",
+            parameter_type : "Locator"
           },
           {
-            parameter_name: "referenceFile",
-            parameter_type: "Locator"
+            parameter_name : "referenceFile",
+            parameter_type : "Locator"
           },
           {
-            parameter_name: "outputLocation",
-            parameter_type: "Locator"
+            parameter_name : "outputLocation",
+            parameter_type : "Locator"
           }
         ],
-        optional_input_parameters: []
-        output_parameters: [
+        optional_input_parameters : []
+        output_parameters : [
           {
-            parameter_name: "outputFile",
-            parameter_type: "Locator"
+            parameter_name : "outputFile",
+            parameter_type : "Locator"
           }
         ]
-      }]
+      }
+    ]
   }
   service2 = {
-    name        = "BenchmarkSTT Service 2"
+    name         = "BenchmarkSTT Service 2"
     auth_type    = "AWS4"
-    resources   = [
+    resources    = [
       {
         http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
         resource_type = "JobAssignment"

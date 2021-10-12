@@ -31,7 +31,7 @@ async function main() {
         exists = false;
     }
     if (exists) {
-        throw new McmaException("Version already exists in module repository. Change the version number!");
+        // throw new McmaException("Version already exists in module repository. Change the version number!");
     }
 
     console.log("Uploading AWS version");

@@ -143,7 +143,7 @@ resource "aws_lambda_function" "api_handler" {
   source_code_hash = filebase64sha256("${path.module}/lambdas/api-handler.zip")
   runtime          = "nodejs14.x"
   timeout          = "30"
-  memory_size      = "3008"
+  memory_size      = "2048"
 
   layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
 

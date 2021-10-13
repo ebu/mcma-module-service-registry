@@ -3,9 +3,6 @@
     "version": "0.0.0",
     "description": "API gateway request handler for Service Registry",
     "private": true,
-    "engines": {
-        "node": "~12.12.55"
-    },
     "license": "Apache-2.0",
     "dependencies": {
         "@mcma/api": "0.13.26",
@@ -17,11 +14,11 @@
         "@mcma/core": "0.13.26",
         "@mcma/data": "0.13.26",
         "@mcma/worker-invoker": "0.13.26",
-        "aws-sdk": "^2.747.0",
-        "aws-xray-sdk-core": "^3.2.0"
+        "aws-sdk": "^2.1000.0",
+        "aws-xray-sdk-core": "^3.3.3"
     },
     "devDependencies": {
-        "@types/aws-lambda": "^8.10.63",
-        "@types/node": "^12.12.55"
+        "@types/aws-lambda": "^8.10.84",
+        "@types/node": "^14.17.22"
     }
 }

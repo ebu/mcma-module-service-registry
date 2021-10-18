@@ -1,7 +1,7 @@
 {
     "name": "publish",
     "version": "0.0.0",
-    "description": "Script to publish ",
+    "description": "Script to publish",
     "private": true,
     "scripts": {
         "start": "node build/staging/index.js"
@@ -9,7 +9,7 @@
     "main": "build/staging/index.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/core": "0.13.26",
+        "@mcma/core": "0.13.27",
         "aws-sdk": "^2.1000.0"
     },
     "devDependencies": {

@@ -32,7 +32,7 @@ resource "aws_iam_role_policy" "api_handler" {
   role = aws_iam_role.api_handler.id
 
   policy = jsonencode({
-    Version   = "2012-10-17",
+    Version   = "2012-10-17"
     Statement = concat([
       {
         Sid      = "DescribeCloudWatchLogs"
@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "api_handler" {
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
-        ],
+        ]
         Resource = concat([
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${local.lambda_name_api_handler}:*",
@@ -56,32 +56,30 @@ resource "aws_iam_role_policy" "api_handler" {
         ] : [])
       },
       {
-        Sid      = "ListAndDescribeDynamoDBTables",
-        Effect   = "Allow",
+        Sid      = "ListAndDescribeDynamoDBTables"
+        Effect   = "Allow"
         Action   = [
           "dynamodb:List*",
           "dynamodb:DescribeReservedCapacity*",
           "dynamodb:DescribeLimits",
-          "dynamodb:DescribeTimeToLive"
-        ],
+          "dynamodb:DescribeTimeToLive",
+        ]
         Resource = "*"
       },
       {
-        Sid      = "SpecificTable",
-        Effect   = "Allow",
+        Sid      = "AllowTableOperations"
+        Effect   = "Allow"
         Action   = [
-          "dynamodb:BatchGet*",
-          "dynamodb:DescribeStream",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
           "dynamodb:DescribeTable",
-          "dynamodb:Get*",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
           "dynamodb:Query",
           "dynamodb:Scan",
-          "dynamodb:BatchWrite*",
-          "dynamodb:CreateTable",
-          "dynamodb:Delete*",
-          "dynamodb:Update*",
-          "dynamodb:PutItem"
-        ],
+          "dynamodb:UpdateItem",
+        ]
         Resource = [
           aws_dynamodb_table.service_table.arn
         ]
@@ -91,7 +89,7 @@ resource "aws_iam_role_policy" "api_handler" {
     [
       {
         Sid      = "AllowLambdaWritingToXRay"
-        Effect   = "Allow",
+        Effect   = "Allow"
         Action   = [
           "xray:PutTraceSegments",
           "xray:PutTelemetryRecords",

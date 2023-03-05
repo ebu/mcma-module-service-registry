@@ -7,6 +7,15 @@ provider "aws" {
   region  = var.aws_region
 }
 
+provider "mcma" {
+  service_registry_url = module.service_registry_aws.service_url
+
+  aws4_auth {
+    profile = var.aws_profile
+    region  = var.aws_region
+  }
+}
+
 
 ############################################
 # Cloud watch log group for central logging
@@ -26,64 +35,51 @@ module "service_registry_aws" {
 
   stage_name = var.environment_type
 
-  aws_account_id = var.aws_account_id
   aws_region     = var.aws_region
+  aws_profile    = var.aws_profile
 
   log_group                   = aws_cloudwatch_log_group.main
-  api_gateway_logging_enabled = true
   api_gateway_metrics_enabled = true
   xray_tracing_enabled        = true
-
-  services = [local.service1, local.service2]
+  enhanced_monitoring_enabled = true
 }
 
-locals {
-  service1 = {
-    name         = "BenchmarkSTT Service"
-    auth_type    = "AWS4"
-    resources    = [
-      {
-        http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
-        resource_type = "JobAssignment"
-      }
-    ]
-    job_type     = "QAJob"
-    job_profiles = [
-      {
-        name : "BenchmarkSTT",
-        input_parameters : [
-          {
-            parameter_name : "inputFile",
-            parameter_type : "Locator"
-          },
-          {
-            parameter_name : "referenceFile",
-            parameter_type : "Locator"
-          },
-          {
-            parameter_name : "outputLocation",
-            parameter_type : "Locator"
-          }
-        ],
-        optional_input_parameters : []
-        output_parameters : [
-          {
-            parameter_name : "outputFile",
-            parameter_type : "Locator"
-          }
-        ]
-      }
-    ]
+resource "mcma_service" "test_service" {
+  name      = "Test Service"
+  auth_type = "AWS4"
+
+  resource {
+    resource_type = "JobAssignment"
+    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
   }
-  service2 = {
-    name         = "BenchmarkSTT Service 2"
-    auth_type    = "AWS4"
-    resources    = [
-      {
-        http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
-        resource_type = "JobAssignment"
-      }
-    ]
-    job_profiles = []
+
+  job_type = "QAJob"
+  job_profile_ids = [
+    mcma_job_profile.transcribe.id
+  ]
+}
+
+resource "mcma_job_profile" "transcribe" {
+  name = "TranscribeAzure"
+
+  input_parameter {
+    name = "inputFile"
+    type = "Locator"
+  }
+
+  input_parameter {
+    name = "exportFormats"
+    type = "string[]"
+  }
+
+  input_parameter {
+    name     = "keywords"
+    type     = "string[]"
+    optional = true
+  }
+
+  output_parameter {
+    name = "transcription"
+    type = "{[key: string]: S3Locator}"
   }
 }

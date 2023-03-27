@@ -2,12 +2,9 @@ output "auth_type" {
   value = local.service_auth_type
 }
 
-output "services_url" {
-  value = "${local.service_url}/services"
-}
-
-output "job_profiles_url" {
-  value = "${local.service_url}/job-profiles"
+output "service_url" {
+  depends_on = [ mcma_service.service ]
+  value = local.service_url
 }
 
 # exporting all resources from module
@@ -54,6 +51,12 @@ output "aws_apigatewayv2_route" {
   }
 }
 
+output "aws_apigatewayv2_stage" {
+  value = {
+    service_api = aws_apigatewayv2_stage.service_api
+  }
+}
+
 output "aws_lambda_permission" {
   value = {
     service_api_default = aws_lambda_permission.service_api_default
@@ -61,8 +64,8 @@ output "aws_lambda_permission" {
   }
 }
 
-output "aws_apigatewayv2_stage" {
+output "mcma_service" {
   value = {
-    service_api = aws_apigatewayv2_stage.service_api
+    service = mcma_service.service
   }
 }

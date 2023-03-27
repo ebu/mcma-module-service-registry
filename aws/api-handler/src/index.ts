@@ -1,17 +1,14 @@
 import { APIGatewayProxyEventV2, Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
 
-import { JobProfile, Service } from "@mcma/core";
+import { ConsoleLoggerProvider, JobProfile, Service } from "@mcma/core";
 import { DefaultRouteCollection, McmaApiRouteCollection } from "@mcma/api";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { ApiGatewayApiController } from "@mcma/aws-api-gateway";
-
-const { LogGroupName } = process.env;
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("service-registry-api-handler", LogGroupName, new AWS.CloudWatchLogs());
+const loggerProvider = new ConsoleLoggerProvider("service-registry-api-handler");
 const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
 
 const restController =
@@ -33,15 +30,9 @@ export async function handler(event: APIGatewayProxyEventV2, context: Context) {
 
         return await restController.handleRequest(event, context);
     } catch (error) {
-        logger.error(error?.toString());
+        logger.error(error);
         throw error;
     } finally {
         logger.functionEnd(context.awsRequestId);
-
-        console.log("LoggerProvider.flush - START - " + new Date().toISOString());
-        const t1 = Date.now();
-        await loggerProvider.flush(Date.now() + context.getRemainingTimeInMillis() - 5000);
-        const t2 = Date.now();
-        console.log("LoggerProvider.flush - END   - " + new Date().toISOString() + " - flush took " + (t2 - t1) + " ms");
     }
 }

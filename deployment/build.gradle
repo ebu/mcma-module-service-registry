@@ -3,7 +3,6 @@ import groovy.json.JsonOutput
 task generateTerraformTFVars {
     inputs.property("environment_name", environmentName)
     inputs.property("environment_type", environmentType)
-    inputs.property("aws_account_id", awsAccountId)
     inputs.property("aws_profile", awsProfile)
     inputs.property("aws_region", awsRegion)
 
@@ -14,9 +13,8 @@ task generateTerraformTFVars {
         def data = [
                 environment_name: environmentName,
                 environment_type: environmentType,
-                global_prefix   : "${environmentName}.${environmentType}".replace(".", "-"),
+                global_prefix   : "${environmentName}-${environmentType}",
 
-                aws_account_id  : awsAccountId,
                 aws_profile     : awsProfile,
                 aws_region      : awsRegion,
         ]

@@ -3,7 +3,7 @@
 
 provider "registry.terraform.io/ebu/mcma" {
   version     = "0.0.23"
-  constraints = ">= 0.0.22, >= 0.0.23"
+  constraints = ">= 0.0.23"
   hashes = [
     "h1:Uv6TDYKE3coM283PcxhgFCI8KI3MQVQcR4uz7ypl5TY=",
     "zh:02e46d5572c2f80275884644a65241820ef1af3b0a16e563dedc249464310281",

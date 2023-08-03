@@ -1,0 +1,10 @@
+apply from: "${project.rootDir}/gradle-tasks-for-module.gradle"
+
+task copyApiHandler(type: Copy) {
+    dependsOn "api-handler:build"
+    from file("api-handler/build/dist/function.zip")
+    into "build/staging/functions"
+    rename { "api-handler.zip" }
+}
+
+build.dependsOn copyApiHandler

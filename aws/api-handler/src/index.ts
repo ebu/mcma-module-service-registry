@@ -13,16 +13,14 @@ const loggerProvider = new ConsoleLoggerProvider("service-registry-api-handler")
 const dbTableProvider = new DynamoDbTableProvider({}, dynamoDBClient);
 
 const restController =
-    new ApiGatewayApiController(
-        new McmaApiRouteCollection()
+    new ApiGatewayApiController({
+        routes: new McmaApiRouteCollection()
             .addRoutes(new DefaultRouteCollection(dbTableProvider, Service))
             .addRoutes(new DefaultRouteCollection(dbTableProvider, JobProfile)),
-        loggerProvider);
+        loggerProvider,
+    });
 
 export async function handler(event: APIGatewayProxyEventV2, context: Context) {
-    console.log(JSON.stringify(event, null, 2));
-    console.log(JSON.stringify(context, null, 2));
-
     const logger = loggerProvider.get(context.awsRequestId);
     try {
         logger.functionStart(context.awsRequestId);

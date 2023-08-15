@@ -57,3 +57,24 @@ variable "app_insights" {
     instrumentation_key = string
   })
 }
+
+#######################
+# API authentication
+#######################
+
+variable "api_keys_read_only" {
+  type = list(string)
+  default = []
+}
+
+variable "api_keys_read_write" {
+  type = list(string)
+  default = []
+}
+
+########################
+# Deployment API Key
+########################
+variable "deployment_api_key" {
+  type = string
+}

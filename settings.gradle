@@ -1,5 +1,5 @@
 include "aws:api-handler",
         "azure:api-handler",
         "deployment",
-        "scripts",
+        "scripts:post-deploy",
         "scripts:publish"

@@ -3,6 +3,7 @@ locals {
   service_api_function_name = format("%.32s", replace("${var.prefix}${var.resource_group.location}", "/[^a-z0-9]+/", ""))
   service_fqdn              = "${local.service_api_function_name}.azurewebsites.net"
   service_url               = "https://${local.service_fqdn}"
+  auth_type         = "McmaApiKey"
 }
 
 resource "local_sensitive_file" "api_handler" {
@@ -46,5 +47,8 @@ resource "azurerm_windows_function_app" "api_handler" {
     MCMA_COSMOS_DB_ENDPOINT    = var.cosmosdb_account.endpoint
     MCMA_COSMOS_DB_KEY         = var.cosmosdb_account.primary_key
     MCMA_COSMOS_DB_REGION      = var.resource_group.location
+
+    MCMA_KEY_VAULT_URL                     = azurerm_key_vault.service.vault_uri
+    MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID = azurerm_key_vault_secret.api_key_security_config.name
   }
 }

@@ -1,3 +1,18 @@
+provider "mcma" {
+  alias = "aws"
+
+  service_registry_url       = module.service_registry_aws.service_url
+  service_registry_auth_type = module.service_registry_aws.auth_type
+
+  aws4_auth {
+    profile = var.aws_profile
+    region  = var.aws_region
+  }
+
+  mcma_api_key_auth {
+    api_key = random_password.deployment_api_key.result
+  }
+}
 
 ############################################
 # Cloud watch log group for central logging
@@ -17,16 +32,22 @@ module "service_registry_aws" {
 
   stage_name = var.environment_type
 
-  aws_region     = var.aws_region
-  aws_profile    = var.aws_profile
+  aws_region  = var.aws_region
+  aws_profile = var.aws_profile
 
   log_group                   = aws_cloudwatch_log_group.main
   api_gateway_metrics_enabled = true
   xray_tracing_enabled        = true
   enhanced_monitoring_enabled = true
+
+  api_keys_read_write = [random_password.deployment_api_key.result]
+
+  #  api_security_auth_type = "AWS4"
 }
 
-resource "mcma_service" "test_service" {
+resource "mcma_service" "test_service_aws" {
+  provider = mcma.aws
+
   name      = "Test Service"
   auth_type = "AWS4"
 
@@ -35,13 +56,15 @@ resource "mcma_service" "test_service" {
     http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
   }
 
-  job_type = "QAJob"
+  job_type        = "QAJob"
   job_profile_ids = [
-    mcma_job_profile.transcribe.id
+    mcma_job_profile.transcribe_aws.id
   ]
 }
 
-resource "mcma_job_profile" "transcribe" {
+resource "mcma_job_profile" "transcribe_aws" {
+  provider = mcma.aws
+
   name = "TranscribeAzure"
 
   input_parameter {

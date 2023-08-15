@@ -1,16 +1,15 @@
 {
-    "name": "publish",
+    "name": "post-deploy",
     "version": "0.0.0",
-    "description": "Script to publish",
+    "description": "Post deployment script",
     "private": true,
     "scripts": {
         "start": "node build/staging/index.js"
     },
     "main": "build/staging/index.js",
-    "license": "Apache-2.0",
+    "license": "UNLICENSED",
     "dependencies": {
-        "@aws-sdk/credential-providers": "^3.300.0",
-        "@aws-sdk/client-s3": "^3.300.0",
+        "@mcma/client": "0.16.3-beta10",
         "@mcma/core": "0.16.3-beta10"
     },
     "devDependencies": {

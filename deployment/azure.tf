@@ -1,3 +1,13 @@
+provider "mcma" {
+  alias = "azure"
+
+  service_registry_url = module.service_registry_azure.service_url
+
+  mcma_api_key_auth {
+    api_key = random_password.deployment_api_key.result
+  }
+}
+
 ######################
 # Resource Group
 ######################
@@ -87,4 +97,51 @@ module "service_registry_azure" {
   cosmosdb_account    = azurerm_cosmosdb_account.cosmosdb_account
 
   azure_tenant_id = var.azure_tenant_id
+
+  deployment_api_key = random_password.deployment_api_key.result
+}
+
+
+resource "mcma_service" "test_service_azure" {
+  provider = mcma.azure
+
+  name      = "Test Service"
+  auth_type = "AWS4"
+
+  resource {
+    resource_type = "JobAssignment"
+    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
+  }
+
+  job_type        = "QAJob"
+  job_profile_ids = [
+    mcma_job_profile.transcribe_azure.id
+  ]
+}
+
+resource "mcma_job_profile" "transcribe_azure" {
+  provider = mcma.azure
+
+  name = "TranscribeAzure"
+
+  input_parameter {
+    name = "inputFile"
+    type = "Locator"
+  }
+
+  input_parameter {
+    name = "exportFormats"
+    type = "string[]"
+  }
+
+  input_parameter {
+    name     = "keywords"
+    type     = "string[]"
+    optional = true
+  }
+
+  output_parameter {
+    name = "transcription"
+    type = "{[key: string]: S3Locator}"
+  }
 }

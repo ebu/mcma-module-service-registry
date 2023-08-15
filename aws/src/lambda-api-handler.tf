@@ -86,6 +86,16 @@ resource "aws_iam_role_policy" "api_handler" {
         ]
       }
     ],
+      var.api_security_auth_type == "McmaApiKey" ?
+      [
+        {
+          Sid      = "AllowReadingApiKeySecurityConfig"
+          Effect   = "Allow"
+          Action   = "secretsmanager:GetSecretValue"
+          Resource = aws_secretsmanager_secret.api_key_security_config[0].arn
+        }
+      ] :
+      [],
       var.xray_tracing_enabled ?
       [
         {
@@ -124,8 +134,9 @@ resource "aws_lambda_function" "api_handler" {
 
   environment {
     variables = {
-      MCMA_TABLE_NAME = aws_dynamodb_table.service_table.name
-      MCMA_PUBLIC_URL = local.service_url
+      MCMA_TABLE_NAME                        = aws_dynamodb_table.service_table.name
+      MCMA_PUBLIC_URL                        = local.service_url
+      MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID = var.api_security_auth_type == "McmaApiKey" ? aws_secretsmanager_secret.api_key_security_config[0].name : ""
     }
   }
 

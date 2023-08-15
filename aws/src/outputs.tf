@@ -1,22 +1,36 @@
 output "auth_type" {
-  value = local.service_auth_type
+  value = local.auth_type
 }
 
 output "service_url" {
-  depends_on = [ mcma_service.service ]
+  depends_on = [
+    aws_apigatewayv2_api.service_api,
+    aws_apigatewayv2_integration.service_api,
+    aws_apigatewayv2_route.service_api_default,
+    aws_apigatewayv2_route.service_api_options,
+    aws_apigatewayv2_stage.service_api,
+    aws_dynamodb_table.service_table,
+    aws_iam_role.api_handler,
+    aws_iam_role_policy.api_handler,
+    aws_lambda_function.api_handler,
+    aws_lambda_permission.service_api_default,
+    aws_lambda_permission.service_api_options,
+    aws_secretsmanager_secret.api_key_security_config,
+    aws_secretsmanager_secret_version.api_key_security_config,
+  ]
   value = local.service_url
 }
 
 # exporting all resources from module
 output "aws_iam_role" {
   value = {
-    lambda_execution = aws_iam_role.api_handler
+    api_handler = aws_iam_role.api_handler
   }
 }
 
 output "aws_iam_role_policy" {
   value = {
-    lambda_execution = aws_iam_role_policy.api_handler
+    api_handler = aws_iam_role_policy.api_handler
   }
 }
 
@@ -64,8 +78,14 @@ output "aws_lambda_permission" {
   }
 }
 
-output "mcma_service" {
+output "aws_secretsmanager_secret" {
   value = {
-    service = mcma_service.service
+    api_key_security_config = aws_secretsmanager_secret.api_key_security_config
+  }
+}
+
+output "aws_secretsmanager_secret_version" {
+  value = {
+    api_key_security_config = aws_secretsmanager_secret_version.api_key_security_config
   }
 }

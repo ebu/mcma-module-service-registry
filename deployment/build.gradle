@@ -48,8 +48,7 @@ task terraformInit(type: Exec) {
 
 task terraformInitUpgrade(type: Exec) {
     dependsOn ":verifyTerraform"
-    inputs.file "main.tf"
-    inputs.file "versions.tf"
+    inputs.files fileTree(dir: '.', include: '*.tf')
     outputs.upToDateWhen { file(".terraform").exists() }
     commandLine terraformExecutable
     args "init", "-upgrade"

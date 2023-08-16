@@ -20,10 +20,6 @@ variable "resource_group" {
   })
 }
 
-variable "azure_tenant_id" {
-  type = string
-}
-
 ###########################
 # Azure accounts and plans
 ###########################
@@ -70,11 +66,4 @@ variable "api_keys_read_only" {
 variable "api_keys_read_write" {
   type = list(string)
   default = []
-}
-
-########################
-# Deployment API Key
-########################
-variable "deployment_api_key" {
-  type = string
 }

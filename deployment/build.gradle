@@ -5,8 +5,6 @@ task generateTerraformTFVars {
     inputs.property("environment_type", environmentType)
     inputs.property("aws_profile", awsProfile)
     inputs.property("aws_region", awsRegion)
-    inputs.property("azure_client_id", azureClientId)
-    inputs.property("azure_client_secret", azureClientSecret)
     inputs.property("azure_subscription_id", azureSubscriptionId)
     inputs.property("azure_tenant_id", azureTenantId)
     inputs.property("azure_location", azureLocation)
@@ -23,8 +21,6 @@ task generateTerraformTFVars {
                 aws_profile          : awsProfile,
                 aws_region           : awsRegion,
 
-                azure_client_id      : azureClientId,
-                azure_client_secret  : azureClientSecret,
                 azure_subscription_id: azureSubscriptionId,
                 azure_tenant_id      : azureTenantId,
                 azure_location       : azureLocation

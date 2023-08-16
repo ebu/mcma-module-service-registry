@@ -43,7 +43,7 @@ locals {
     api_key => {}
   }
   api_keys_read_write = merge({
-    for api_key in concat(var.api_keys_read_write, [var.deployment_api_key]) :
+    for api_key in var.api_keys_read_write :
     api_key => {
       "^/services(?:/[^/]+)?$"     = ["ANY"]
       "^/job-profiles(?:/[^/]+)?$" = ["ANY"]

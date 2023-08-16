@@ -1,3 +1,16 @@
+#########################
+# Provider registration
+#########################
+
+provider "azurerm" {
+  tenant_id       = var.azure_tenant_id
+  subscription_id = var.azure_subscription_id
+  client_id       = var.AZURE_CLIENT_ID
+  client_secret   = var.AZURE_CLIENT_SECRET
+
+  features {}
+}
+
 provider "mcma" {
   alias = "azure"
 
@@ -96,9 +109,7 @@ module "service_registry_azure" {
   app_insights        = azurerm_application_insights.app_insights
   cosmosdb_account    = azurerm_cosmosdb_account.cosmosdb_account
 
-  azure_tenant_id = var.azure_tenant_id
-
-  deployment_api_key = random_password.deployment_api_key.result
+  api_keys_read_write = [random_password.deployment_api_key.result]
 }
 
 

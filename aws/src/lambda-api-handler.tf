@@ -137,6 +137,7 @@ resource "aws_lambda_function" "api_handler" {
       MCMA_TABLE_NAME                        = aws_dynamodb_table.service_table.name
       MCMA_PUBLIC_URL                        = local.service_url
       MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID = var.api_security_auth_type == "McmaApiKey" ? aws_secretsmanager_secret.api_key_security_config[0].name : ""
+      MCMA_API_KEY_SECURITY_CONFIG_HASH      = var.api_security_auth_type == "McmaApiKey" ? sha256(aws_secretsmanager_secret_version.api_key_security_config[0].secret_string) : ""
     }
   }
 

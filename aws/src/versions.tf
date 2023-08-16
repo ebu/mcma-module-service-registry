@@ -6,7 +6,7 @@ terraform {
     }
     mcma = {
       source  = "ebu/mcma"
-      version = ">= 0.0.26"
+      version = ">= 0.0.27"
     }
   }
 }

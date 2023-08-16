@@ -1,5 +1,5 @@
 output "auth_type" {
-  value = local.auth_type
+  value = var.api_security_auth_type
 }
 
 output "service_url" {

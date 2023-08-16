@@ -1,14 +1,14 @@
 output "service_registry_aws" {
   value = {
-    auth_type = module.service_registry_aws.auth_type
-    service_url       = module.service_registry_aws.service_url
+    auth_type   = module.service_registry_aws.auth_type
+    service_url = module.service_registry_aws.service_url
   }
 }
 
 output "service_registry_azure" {
   value = {
-    auth_type = module.service_registry_azure.auth_type
-    service_url       = module.service_registry_azure.service_url
+    auth_type   = module.service_registry_azure.auth_type
+    service_url = module.service_registry_azure.service_url
   }
 }
 

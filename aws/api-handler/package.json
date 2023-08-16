@@ -6,6 +6,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.300.0",
+        "@aws-sdk/client-secrets-manager": "^3.300.0",
         "@mcma/api": "0.16.3-beta10",
         "@mcma/aws-api-gateway": "0.16.3-beta10",
         "@mcma/aws-dynamodb": "0.16.3-beta10",
@@ -13,8 +14,8 @@
         "@mcma/client": "0.16.3-beta10",
         "@mcma/core": "0.16.3-beta10",
         "@mcma/data": "0.16.3-beta10",
-        "@mcma/worker-invoker": "0.16.3-beta10",
         "@mcma/secrets": "0.16.3-beta10",
+        "@mcma/worker-invoker": "0.16.3-beta10",
         "aws-xray-sdk-core": "^3.5.1"
     },
     "devDependencies": {

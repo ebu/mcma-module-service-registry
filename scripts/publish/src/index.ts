@@ -7,7 +7,6 @@ const { MODULE_NAMESPACE, MODULE_NAME, MODULE_VERSION, MODULE_REPOSITORY } = pro
 
 let s3Client = new S3Client({ credentials: fromIni() });
 
-
 async function publishModule(provider: "aws" | "azure", moduleZipFile: string) {
     console.log();
     console.log("Publishing to Module Repository");

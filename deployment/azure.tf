@@ -8,7 +8,11 @@ provider "azurerm" {
   client_id       = var.AZURE_CLIENT_ID
   client_secret   = var.AZURE_CLIENT_SECRET
 
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 provider "mcma" {

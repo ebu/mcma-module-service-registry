@@ -79,6 +79,14 @@ resource "azurerm_cosmosdb_account" "cosmosdb_account" {
   }
 }
 
+resource "azurerm_cosmosdb_sql_database" "cosmosdb_database" {
+  name                = var.prefix
+  resource_group_name = azurerm_resource_group.resource_group.name
+  account_name        = azurerm_cosmosdb_account.cosmosdb_account.name
+  autoscale_settings {
+    max_throughput = 1000
+  }
+}
 
 ########################
 # Application Insights
@@ -112,6 +120,7 @@ module "service_registry_azure" {
   app_service_plan    = azurerm_service_plan.app_service_plan
   app_insights        = azurerm_application_insights.app_insights
   cosmosdb_account    = azurerm_cosmosdb_account.cosmosdb_account
+  cosmosdb_database   = azurerm_cosmosdb_sql_database.cosmosdb_database
 
   api_keys_read_write = [random_password.deployment_api_key.result]
 }

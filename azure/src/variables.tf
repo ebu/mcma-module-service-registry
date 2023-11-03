@@ -66,11 +66,16 @@ variable "app_insights" {
 #######################
 
 variable "api_keys_read_only" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
 
 variable "api_keys_read_write" {
-  type = list(string)
+  type    = list(string)
   default = []
+}
+
+variable "key_vault_secret_expiration_date" {
+  type    = string
+  default = null
 }

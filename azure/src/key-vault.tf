@@ -67,4 +67,6 @@ resource "azurerm_key_vault_secret" "api_key_security_config" {
     local.api_keys_read_only,
     local.api_keys_read_write
   ))
+
+  expiration_date = var.key_vault_secret_expiration_date
 }

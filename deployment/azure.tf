@@ -123,6 +123,8 @@ module "service_registry_azure" {
   cosmosdb_database   = azurerm_cosmosdb_sql_database.cosmosdb_database
 
   api_keys_read_write = [random_password.deployment_api_key.result]
+
+  key_vault_secret_expiration_date = "2100-01-01T00:00:00Z"
 }
 
 
@@ -134,7 +136,7 @@ resource "mcma_service" "test_service_azure" {
 
   resource {
     resource_type = "JobAssignment"
-    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
+    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/job-assignments"
   }
 
   job_type        = "QAJob"

@@ -62,7 +62,7 @@ resource "mcma_service" "test_service_aws" {
 
   resource {
     resource_type = "JobAssignment"
-    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/dev/job-assignments"
+    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/job-assignments"
   }
 
   job_type        = "QAJob"

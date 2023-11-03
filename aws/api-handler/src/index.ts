@@ -33,7 +33,7 @@ const restController =
     });
 
 export async function handler(event: APIGatewayProxyEventV2, context: Context) {
-    const logger = loggerProvider.get(context.awsRequestId);
+    const logger = await loggerProvider.get(context.awsRequestId);
     try {
         logger.functionStart(context.awsRequestId);
         logger.debug(event);

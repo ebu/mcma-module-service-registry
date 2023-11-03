@@ -39,8 +39,6 @@ module "service_registry_aws" {
 
   prefix = "${var.prefix}-service-registry"
 
-  stage_name = var.environment_type
-
   aws_region  = var.aws_region
   aws_profile = var.aws_profile
 

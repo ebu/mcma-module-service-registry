@@ -79,3 +79,9 @@ variable "key_vault_secret_expiration_date" {
   type    = string
   default = null
 }
+
+variable "function_elastic_instance_minimum" {
+  type        = number
+  description = "Set the minimum instance number for azure functions when using premium plan"
+  default     = null
+}

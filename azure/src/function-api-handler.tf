@@ -11,7 +11,6 @@ resource "local_sensitive_file" "api_handler" {
   source   = local.service_api_zip_file
 }
 
-
 resource "azurerm_windows_function_app" "api_handler" {
   name                = local.service_api_function_name
   resource_group_name = var.resource_group.name
@@ -19,7 +18,7 @@ resource "azurerm_windows_function_app" "api_handler" {
 
   storage_account_name       = var.app_storage_account.name
   storage_account_access_key = var.app_storage_account.primary_access_key
-  service_plan_id            = var.app_service_plan.id
+  service_plan_id            = local.app_service_plan_id
 
   site_config {
     application_stack {
@@ -54,4 +53,6 @@ resource "azurerm_windows_function_app" "api_handler" {
     MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID = azurerm_key_vault_secret.api_key_security_config.name
     MCMA_API_KEY_SECURITY_CONFIG_HASH      = sha256(azurerm_key_vault_secret.api_key_security_config.value)
   }
+
+  tags = var.tags
 }

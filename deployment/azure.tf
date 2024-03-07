@@ -38,7 +38,7 @@ resource "azurerm_resource_group" "resource_group" {
 # App Storage Account
 ######################
 
-resource "azurerm_storage_account" "app_storage_account" {
+resource "azurerm_storage_account" "storage_account" {
   name                     = format("%.24s", replace("${var.prefix}-${azurerm_resource_group.resource_group.location}", "/[^a-z0-9]+/", ""))
   resource_group_name      = azurerm_resource_group.resource_group.name
   location                 = azurerm_resource_group.resource_group.location
@@ -64,15 +64,16 @@ resource "azurerm_cosmosdb_account" "cosmosdb_account" {
     failover_priority = 0
     location          = azurerm_resource_group.resource_group.location
   }
+
+  capabilities {
+    name = "EnableServerless"
+  }
 }
 
 resource "azurerm_cosmosdb_sql_database" "cosmosdb_database" {
   name                = var.prefix
   resource_group_name = azurerm_resource_group.resource_group.name
   account_name        = azurerm_cosmosdb_account.cosmosdb_account.name
-  autoscale_settings {
-    max_throughput = 1000
-  }
 }
 
 ########################
@@ -103,7 +104,7 @@ module "service_registry_azure" {
   prefix = "${var.prefix}-service-registry"
 
   resource_group      = azurerm_resource_group.resource_group
-  app_storage_account = azurerm_storage_account.app_storage_account
+  app_storage_account = azurerm_storage_account.storage_account
   app_insights        = azurerm_application_insights.app_insights
   cosmosdb_account    = azurerm_cosmosdb_account.cosmosdb_account
   cosmosdb_database   = azurerm_cosmosdb_sql_database.cosmosdb_database

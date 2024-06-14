@@ -9,10 +9,10 @@
     "main": "build/staging/index.js",
     "license": "UNLICENSED",
     "dependencies": {
-        "@mcma/client": "0.16.17",
-        "@mcma/core": "0.16.17"
+        "@mcma/client": "0.16.18",
+        "@mcma/core": "0.16.18"
     },
     "devDependencies": {
-        "@types/node": "^18.15.10"
+        "@types/node": "^18.19.34"
     }
 }

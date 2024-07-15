@@ -37,13 +37,6 @@ variable "aws_region" {
   description = "AWS Region to which this module is deployed"
 }
 
-// TODO Delete this variable when MCMA terraform provider gets removed
-variable "aws_profile" {
-  type        = string
-  description = "AWS shared credentials profile used to connect to service registry"
-  default     = null
-}
-
 variable "iam_role_path" {
   type        = string
   description = "Path for creation of access role"

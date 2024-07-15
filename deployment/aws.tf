@@ -40,7 +40,6 @@ module "service_registry_aws" {
   prefix = "${var.prefix}-service-registry"
 
   aws_region  = var.aws_region
-  aws_profile = var.aws_profile
 
   log_group                   = aws_cloudwatch_log_group.main
   api_gateway_metrics_enabled = true

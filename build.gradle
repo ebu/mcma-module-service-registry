@@ -171,12 +171,12 @@ task publish(type: Exec) {
         }
     }
     commandLine gitExecutable
-    args "tag", "-a", moduleVersion, "-m", "Released version ${moduleVersion}"
+    args "tag", "-a", "v${moduleVersion}", "-m", "Released version ${moduleVersion}"
 
     doLast {
         exec {
             commandLine gitExecutable
-            args "push", "origin", "tag", moduleVersion
+            args "push", "origin", "tag", "v${moduleVersion}"
         }
     }
 }

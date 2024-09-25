@@ -99,7 +99,7 @@ resource "azurerm_application_insights" "app_insights" {
 #########################
 
 module "service_registry_azure" {
-  source = "../azure/build/staging"
+  source = "../azure/module"
 
   prefix = "${var.prefix}-service-registry"
 

@@ -1,8 +1,0 @@
-{
-    "namespace": "@MODULE_NAMESPACE@",
-    "name": "@MODULE_NAME@",
-    "provider": "azure",
-    "version": "@MODULE_VERSION@",
-    "displayName": "Service Registry",
-    "description": "The Service Registry serves as a central 'yellow pages' for services to discover what other services are available."
-}

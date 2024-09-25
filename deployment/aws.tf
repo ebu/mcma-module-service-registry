@@ -35,7 +35,7 @@ resource "aws_cloudwatch_log_group" "main" {
 # Service Registry Module
 #########################
 module "service_registry_aws" {
-  source = "../aws/build/staging"
+  source = "../aws/module"
 
   prefix = "${var.prefix}-service-registry"
 

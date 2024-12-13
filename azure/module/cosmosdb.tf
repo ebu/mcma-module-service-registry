@@ -14,5 +14,5 @@ resource "azurerm_cosmosdb_sql_container" "service" {
   resource_group_name = var.resource_group.name
   account_name        = var.cosmosdb_account.name
   database_name       = local.cosmosdb_database_name
-  partition_key_paths  = ["/partitionKey"]
+  partition_key_paths = ["/partitionKey"]
 }

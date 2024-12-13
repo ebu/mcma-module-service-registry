@@ -1,10 +1,10 @@
-task copyApiHandler(type: Copy) {
-    dependsOn "api-handler:build"
-    from file("api-handler/build/dist/function.zip")
-    into "module/functions"
-    rename { "api-handler.zip" }
+task copyFunctionApp(type: Copy) {
+    dependsOn "function-app:build"
+    from file("function-app/build/dist/function.zip")
+    into "module"
+    rename { "function-app.zip" }
 }
 
 task build {
-    dependsOn copyApiHandler
+    dependsOn copyFunctionApp
 }

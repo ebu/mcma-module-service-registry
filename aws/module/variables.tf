@@ -87,7 +87,12 @@ variable "api_keys_read_write" {
 
 #########################
 # Selecting API Authentication
-#########################
+######################### 
+
+variable "api_stage_name" {
+  type    = string
+  default = null
+}
 
 variable "api_security_auth_type" {
   type    = string

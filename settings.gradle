@@ -1,4 +1,4 @@
 include "aws:api-handler",
-        "azure:api-handler",
+        "azure:function-app",
         "deployment",
         "scripts:post-deploy"

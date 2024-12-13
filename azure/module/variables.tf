@@ -26,18 +26,33 @@ variable "tags" {
   default     = {}
 }
 
-###########################
-# Azure accounts and plans
-###########################
+# ###########################
+# # Azure accounts and plans
+# ###########################
 
-variable "app_storage_account" {
+variable "use_flex_consumption_plan" {
+  type        = bool
+  description = "Allow enabling / disabling the usage of flex consumption plan"
+  default     = true
+}
+
+variable "function_elastic_instance_minimum" {
+  type        = number
+  description = "Set the minimum instance number for azure functions when using premium plan"
+  default     = null
+}
+
+variable "storage_account" {
   type = object({
-    name               = string
-    primary_access_key = string
+    id                        = string
+    name                      = string
+    primary_access_key        = string
+    primary_connection_string = string
+    primary_blob_endpoint     = string
   })
 }
 
-variable "app_service_plan" {
+variable "service_plan" {
   type = object({
     id   = string
     name = string
@@ -68,9 +83,9 @@ variable "app_insights" {
   })
 }
 
-#######################
-# API authentication
-#######################
+# #######################
+# # API authentication
+# #######################
 
 variable "api_keys_read_only" {
   type    = list(string)
@@ -87,8 +102,3 @@ variable "key_vault_secret_expiration_date" {
   default = null
 }
 
-variable "function_elastic_instance_minimum" {
-  type        = number
-  description = "Set the minimum instance number for azure functions when using premium plan"
-  default     = null
-}

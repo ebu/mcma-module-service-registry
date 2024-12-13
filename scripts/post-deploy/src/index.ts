@@ -13,6 +13,7 @@ export function log(entry?: any) {
 }
 
 async function main() {
+    return;
     const terraformOutput = JSON.parse(fs.readFileSync(TERRAFORM_OUTPUT, "utf8"));
 
     log(terraformOutput);

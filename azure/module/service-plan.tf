@@ -14,5 +14,5 @@ resource "azurerm_service_plan" "service_plan" {
 }
 
 locals {
-  service_plan_id = length(azurerm_service_plan.service_plan) > 0 ? azurerm_service_plan.service_plan[0].id : var.service_plan.id
+  service_plan_id = length(azurerm_service_plan.service_plan) == 0 ? var.service_plan.id : var.use_flex_consumption_plan ? replace(azurerm_service_plan.service_plan[0].id, "Microsoft.Web/serverFarms", "Microsoft.Web/serverfarms") : azurerm_service_plan.service_plan[0].id
 }

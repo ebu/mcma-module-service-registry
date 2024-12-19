@@ -4,12 +4,14 @@ output "auth_type" {
 
 output "service_url" {
   depends_on = [
+    azapi_resource.function_app,
     azurerm_cosmosdb_sql_container.service,
     azurerm_cosmosdb_sql_database.service,
     azurerm_key_vault.service,
     azurerm_key_vault_access_policy.function_app,
     azurerm_key_vault_access_policy.deployment,
     azurerm_key_vault_secret.api_key_security_config,
+    azurerm_role_assignment.function_app,
     azurerm_windows_function_app.function_app,
   ]
   value = local.service_url
@@ -40,15 +42,9 @@ output "azurerm_storage_blob" {
   }
 }
 
-output "random_uuid" {
+output "azapi_resource" {
   value = {
-    function_app = random_uuid.function_app
-  }
-}
-
-output "azurerm_resource_group_template_deployment" {
-  value = {
-    function_app = azurerm_resource_group_template_deployment.function_app
+    function_app = azapi_resource.function_app
   }
 }
 

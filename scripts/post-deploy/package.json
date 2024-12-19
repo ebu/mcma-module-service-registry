@@ -9,8 +9,8 @@
     "main": "build/staging/index.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/client": "1.0.0-beta4",
-        "@mcma/core": "1.0.0-beta4"
+        "@mcma/client": "1.0.0-beta7",
+        "@mcma/core": "1.0.0-beta7"
     },
     "devDependencies": {
         "@types/node": "^22.10.1"

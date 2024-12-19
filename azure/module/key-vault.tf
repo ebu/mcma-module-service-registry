@@ -9,10 +9,13 @@ resource "azurerm_key_vault" "service" {
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
 
-  network_acls {
-    bypass         = "AzureServices"
-    default_action = "Deny"
-    ip_rules       = ["0.0.0.0/0"]
+  dynamic "network_acls" {
+    for_each = var.use_flex_consumption_plan ? [] : [1]
+    content {
+      bypass         = "AzureServices"
+      default_action = "Deny"
+      ip_rules       = ["0.0.0.0/0"]
+    }
   }
 
   tags = var.tags

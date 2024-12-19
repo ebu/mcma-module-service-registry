@@ -15,15 +15,22 @@ provider "azurerm" {
   }
 }
 
-# provider "mcma" {
-#   alias = "azure"
-#
-#   service_registry_url = module.service_registry_azure.service_url
-#
-#   mcma_api_key_auth {
-#     api_key = random_password.deployment_api_key.result
-#   }
-# }
+provider "azapi" {
+  tenant_id       = var.azure_tenant_id
+  subscription_id = var.azure_subscription_id
+  client_id       = var.AZURE_CLIENT_ID
+  client_secret   = var.AZURE_CLIENT_SECRET
+}
+
+provider "mcma" {
+  alias = "azure"
+
+  service_registry_url = module.service_registry_azure.service_url
+
+  mcma_api_key_auth {
+    api_key = random_password.deployment_api_key.result
+  }
+}
 
 ######################
 # Resource Group
@@ -101,7 +108,7 @@ resource "azurerm_application_insights" "app_insights" {
 module "service_registry_azure" {
   source = "../azure/module"
 
-  prefix = "${var.prefix}-service-registry"
+  prefix = "${var.prefix}-sr"
 
   resource_group    = azurerm_resource_group.resource_group
   storage_account   = azurerm_storage_account.storage_account
@@ -116,47 +123,46 @@ module "service_registry_azure" {
   key_vault_secret_expiration_date = "2200-01-01T00:00:00Z"
 }
 
+resource "mcma_service" "test_service_azure" {
+  provider = mcma.azure
 
-# resource "mcma_service" "test_service_azure" {
-#   provider = mcma.azure
-#
-#   name      = "Test Service"
-#   auth_type = "AWS4"
-#
-#   resource {
-#     resource_type = "JobAssignment"
-#     http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/job-assignments"
-#   }
-#
-#   job_type        = "QAJob"
-#   job_profile_ids = [
-#     mcma_job_profile.transcribe_azure.id
-#   ]
-# }
-#
-# resource "mcma_job_profile" "transcribe_azure" {
-#   provider = mcma.azure
-#
-#   name = "TranscribeAzure"
-#
-#   input_parameter {
-#     name = "inputFile"
-#     type = "Locator"
-#   }
-#
-#   input_parameter {
-#     name = "exportFormats"
-#     type = "string[]"
-#   }
-#
-#   input_parameter {
-#     name     = "keywords"
-#     type     = "string[]"
-#     optional = true
-#   }
-#
-#   output_parameter {
-#     name = "transcription"
-#     type = "{[key: string]: S3Locator}"
-#   }
-# }
+  name      = "Test Service"
+  auth_type = "AWS4"
+
+  resource {
+    resource_type = "JobAssignment"
+    http_endpoint = "https://x5lwk2rh8b.execute-api.eu-west-1.amazonaws.com/job-assignments"
+  }
+
+  job_type = "QAJob"
+  job_profile_ids = [
+    mcma_job_profile.transcribe_azure.id
+  ]
+}
+
+resource "mcma_job_profile" "transcribe_azure" {
+  provider = mcma.azure
+
+  name = "TranscribeAzure"
+
+  input_parameter {
+    name = "inputFile"
+    type = "Locator"
+  }
+
+  input_parameter {
+    name = "exportFormats"
+    type = "string[]"
+  }
+
+  input_parameter {
+    name     = "keywords"
+    type     = "string[]"
+    optional = true
+  }
+
+  output_parameter {
+    name = "transcription"
+    type = "{[key: string]: S3Locator}"
+  }
+}

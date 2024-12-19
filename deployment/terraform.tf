@@ -4,6 +4,10 @@ terraform {
       source  = "ebu/mcma"
       version = ">= 0.0.27"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = ">= 2.1.0"
+    }
   }
   required_version = ">= 1.0"
 }

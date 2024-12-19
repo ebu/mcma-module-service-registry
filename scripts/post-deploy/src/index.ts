@@ -13,7 +13,6 @@ export function log(entry?: any) {
 }
 
 async function main() {
-    return;
     const terraformOutput = JSON.parse(fs.readFileSync(TERRAFORM_OUTPUT, "utf8"));
 
     log(terraformOutput);
@@ -31,7 +30,6 @@ async function main() {
     const resourceManager = new ResourceManager(resourceManagerConfig, new AuthProvider().add(mcmaApiKeyAuth({ apiKey })));
     const services = await resourceManager.query(Service);
     log(services);
-
 }
 
 main().catch(console.error);

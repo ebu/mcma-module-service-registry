@@ -13,14 +13,6 @@ variable "prefix" {
   description = "Prefix for all managed resources in this module"
 }
 
-variable "resource_group" {
-  type = object({
-    id       = string
-    name     = string
-    location = string
-  })
-}
-
 variable "tags" {
   type        = map(string)
   description = "Tags applied to created resources"
@@ -41,6 +33,14 @@ variable "function_elastic_instance_minimum" {
   type        = number
   description = "Set the minimum instance number for azure functions when using premium plan"
   default     = null
+}
+
+variable "resource_group" {
+  type = object({
+    id       = string
+    name     = string
+    location = string
+  })
 }
 
 variable "storage_account" {

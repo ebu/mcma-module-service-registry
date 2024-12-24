@@ -49,6 +49,11 @@ variable "iam_permissions_boundary" {
   default     = null
 }
 
+variable "api_stage_name" {
+  type    = string
+  default = null
+}
+
 #########################
 # Configuration
 #########################
@@ -88,11 +93,6 @@ variable "api_keys_read_write" {
 #########################
 # Selecting API Authentication
 ######################### 
-
-variable "api_stage_name" {
-  type    = string
-  default = null
-}
 
 variable "api_security_auth_type" {
   type    = string

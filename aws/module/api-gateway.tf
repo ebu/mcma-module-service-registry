@@ -84,5 +84,5 @@ resource "aws_apigatewayv2_stage" "service_api" {
 }
 
 locals {
-  service_url = aws_apigatewayv2_api.service_api.api_endpoint
+  service_url = var.stage_name == null ? aws_apigatewayv2_api.service_api.api_endpoint : "${aws_apigatewayv2_api.service_api.api_endpoint}/${var.stage_name}"
 }

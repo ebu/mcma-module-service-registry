@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2, Context } from "aws-lambda";
-import * as AWSXRay from "aws-xray-sdk-core";
+import { captureAWSv3Client } from "aws-xray-sdk-core";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 
@@ -9,8 +9,8 @@ import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 import { ApiGatewayApiController } from "@mcma/aws-api-gateway";
 import { AwsSecretsManagerSecretsProvider } from "@mcma/aws-secrets-manager";
 
-const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
-const secretsManagerClient = AWSXRay.captureAWSv3Client(new SecretsManagerClient({}));
+const dynamoDBClient = captureAWSv3Client(new DynamoDBClient({}));
+const secretsManagerClient = captureAWSv3Client(new SecretsManagerClient({}));
 
 const loggerProvider = new ConsoleLoggerProvider("service-registry-api-handler");
 const dbTableProvider = new DynamoDbTableProvider({}, dynamoDBClient);

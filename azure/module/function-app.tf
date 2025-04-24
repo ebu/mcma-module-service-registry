@@ -84,43 +84,44 @@ resource "azapi_resource" "function_app" {
             value = var.app_insights.connection_string
           },
           {
-            name  = "MCMA_PUBLIC_URL",
+            name  = "MCMA_PUBLIC_URL"
             value = local.service_url
           },
           {
-            name  = "MCMA_TABLE_NAME",
+            name  = "MCMA_TABLE_NAME"
             value = azurerm_cosmosdb_sql_container.service.name
           },
           {
-            name  = "MCMA_COSMOS_DB_DATABASE_ID",
+            name  = "MCMA_COSMOS_DB_DATABASE_ID"
             value = local.cosmosdb_database_name
           },
           {
-            name  = "MCMA_COSMOS_DB_ENDPOINT",
+            name  = "MCMA_COSMOS_DB_ENDPOINT"
             value = var.cosmosdb_account.endpoint
           },
           {
-            name  = "MCMA_COSMOS_DB_KEY",
+            name  = "MCMA_COSMOS_DB_KEY"
             value = var.cosmosdb_account.primary_key
           },
           {
-            name  = "MCMA_COSMOS_DB_REGION",
+            name  = "MCMA_COSMOS_DB_REGION"
             value = var.resource_group.location
           },
           {
-            name  = "MCMA_KEY_VAULT_URL",
+            name  = "MCMA_KEY_VAULT_URL"
             value = azurerm_key_vault.service.vault_uri
           },
           {
-            name  = "MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID",
+            name  = "MCMA_API_KEY_SECURITY_CONFIG_SECRET_ID"
             value = azurerm_key_vault_secret.api_key_security_config.name
           },
           {
-            name  = "MCMA_API_KEY_SECURITY_CONFIG_HASH",
+            name  = "MCMA_API_KEY_SECURITY_CONFIG_HASH"
             value = sha256(azurerm_key_vault_secret.api_key_security_config.value)
           }
         ]
       }
+      virtualNetworkSubnetId = var.virtual_network_subnet_id
     }
   }
 }

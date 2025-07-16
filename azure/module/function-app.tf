@@ -60,7 +60,7 @@ resource "azapi_resource" "function_app" {
         }
         runtime = {
           name    = "node"
-          version = "20"
+          version = "22"
         }
         scaleAndConcurrency = {
           instanceMemoryMB     = 2048

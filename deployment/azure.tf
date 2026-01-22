@@ -99,6 +99,12 @@ resource "azurerm_subnet" "private" {
   }
 }
 
+# resource "azurerm_network_security_group" "security_group" {
+#   resource_group_name = azurerm_resource_group.resource_group.name
+#   location            = azurerm_resource_group.resource_group.location
+#   name                = var.prefix
+# }
+
 ######################
 # Cosmos DB
 ######################

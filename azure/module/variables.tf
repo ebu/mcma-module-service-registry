@@ -92,7 +92,7 @@ variable "function_app_virtual_network_subnet_id" {
 variable "key_vault_enable_network_acls" {
   type        = bool
   default     = false
-  description = ""
+  description = "Enable if you want to set network acls for key vault"
 }
 
 variable "key_vault_network_bypass" {

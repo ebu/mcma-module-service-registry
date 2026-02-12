@@ -85,7 +85,7 @@ resource "azurerm_subnet" "private" {
   virtual_network_name = azurerm_virtual_network.virtual_network.name
   address_prefixes     = ["10.0.1.0/24"]
 
-  service_endpoints = ["Microsoft.AzureCosmosDB"]
+  service_endpoints = ["Microsoft.AzureCosmosDB", "Microsoft.KeyVault"]
 
   delegation {
     name = "delegation"
@@ -99,11 +99,16 @@ resource "azurerm_subnet" "private" {
   }
 }
 
-# resource "azurerm_network_security_group" "security_group" {
-#   resource_group_name = azurerm_resource_group.resource_group.name
-#   location            = azurerm_resource_group.resource_group.location
-#   name                = var.prefix
-# }
+resource "azurerm_network_security_group" "private" {
+  resource_group_name = azurerm_resource_group.resource_group.name
+  location            = azurerm_resource_group.resource_group.location
+  name                = var.prefix
+}
+
+resource "azurerm_subnet_network_security_group_association" "private" {
+  subnet_id                 = azurerm_subnet.private.id
+  network_security_group_id = azurerm_network_security_group.private.id
+}
 
 ######################
 # Cosmos DB
@@ -186,9 +191,12 @@ module "service_registry_azure" {
 
   api_keys_read_write = [random_password.deployment_api_key.result]
 
-  key_vault_secret_expiration_date = "2200-01-01T00:00:00Z"
+  key_vault_secret_expiration_date     = "2200-01-01T00:00:00Z"
+  key_vault_enable_network_acls        = true
+  key_vault_network_ip_rules           = ["0.0.0.0/0"]
+  key_vault_virtual_network_subnet_ids = [azurerm_subnet.private.id]
 
-  virtual_network_subnet_id = azurerm_subnet.private.id
+  function_app_virtual_network_subnet_id = azurerm_subnet.private.id
 }
 
 resource "mcma_service" "test_service_azure" {

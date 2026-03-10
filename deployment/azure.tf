@@ -66,6 +66,12 @@ resource "azurerm_storage_account" "storage_account" {
       days = "7"
     }
   }
+
+  network_rules {
+    default_action             = "Deny"
+    ip_rules                   = ["0.0.0.0/0"]
+    virtual_network_subnet_ids = [azurerm_subnet.private.id]
+  }
 }
 
 ######################
@@ -85,7 +91,7 @@ resource "azurerm_subnet" "private" {
   virtual_network_name = azurerm_virtual_network.virtual_network.name
   address_prefixes     = ["10.0.1.0/24"]
 
-  service_endpoints = ["Microsoft.AzureCosmosDB", "Microsoft.KeyVault"]
+  service_endpoints = ["Microsoft.AzureCosmosDB", "Microsoft.KeyVault", "Microsoft.Storage"]
 
   delegation {
     name = "delegation"

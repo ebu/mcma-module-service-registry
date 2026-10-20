@@ -1,4 +1,6 @@
-include "aws:api-handler",
-        "azure:function-app",
-        "deployment",
-        "scripts:post-deploy"
+include "aws:api-handler", "azure:function-app"
+
+// Packaging must work on a clean CI runner without deployment credentials.
+if (!providers.gradleProperty("releaseBuild").isPresent()) {
+    include "deployment", "scripts:post-deploy"
+}

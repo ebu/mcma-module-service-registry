@@ -91,7 +91,15 @@ resource "azurerm_subnet" "private" {
   virtual_network_name = azurerm_virtual_network.virtual_network.name
   address_prefixes     = ["10.0.1.0/24"]
 
-  service_endpoints = ["Microsoft.AzureCosmosDB", "Microsoft.KeyVault", "Microsoft.Storage"]
+  service_endpoint {
+    service = "Microsoft.AzureCosmosDB"
+  }
+  service_endpoint {
+    service = "Microsoft.KeyVault"
+  }
+  service_endpoint {
+    service = "Microsoft.Storage"
+  }
 
   delegation {
     name = "delegation"

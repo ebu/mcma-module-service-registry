@@ -150,7 +150,7 @@ resource "azurerm_windows_function_app" "function_app" {
 
   site_config {
     application_stack {
-      node_version = "~20"
+      node_version = "~22"
     }
 
     elastic_instance_minimum               = var.function_elastic_instance_minimum

@@ -3,11 +3,11 @@ import { DefaultRouteCollection, McmaApiRouteCollection, McmaApiKeySecurityMiddl
 import { JobProfile, Service } from "@mcma/core";
 import { CosmosDbTableProvider, fillOptionsFromConfigVariables } from "@mcma/azure-cosmos-db";
 import { AzureKeyVaultSecretsProvider } from "@mcma/azure-key-vault";
-import { AppInsightsLoggerProvider } from "@mcma/azure-logger";
+import { AzureFunctionsLoggerProvider } from "@mcma/azure-logger";
 import { AzureFunctionApiController } from "@mcma/azure-functions-api";
 
 const dbTableProvider = new CosmosDbTableProvider(fillOptionsFromConfigVariables());
-const loggerProvider = new AppInsightsLoggerProvider("service-registry-api-handler");
+const loggerProvider = new AzureFunctionsLoggerProvider("service-registry-api-handler");
 const secretsProvider = new AzureKeyVaultSecretsProvider();
 const securityMiddleware = new McmaApiKeySecurityMiddleware({ secretsProvider });
 
@@ -22,18 +22,20 @@ const restController =
         });
 
 export async function handler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    const logger = await loggerProvider.get(context.invocationId);
+    return loggerProvider.runWithContext(context, async () => {
+        const logger = await loggerProvider.get(context.invocationId);
 
-    try {
-        logger.functionStart(context.invocationId);
-        logger.debug(request);
-        logger.debug(context);
+        try {
+            logger.functionStart(context.invocationId);
+            logger.debug(request);
+            logger.debug(context);
 
-        return await restController.handleRequest(request);
-    } finally {
-        logger.functionEnd(context.invocationId);
-        loggerProvider.flush();
-    }
+            return await restController.handleRequest(request, context);
+        } finally {
+            logger.functionEnd(context.invocationId);
+
+        }
+    });
 }
 
 app.http("api-handler", {

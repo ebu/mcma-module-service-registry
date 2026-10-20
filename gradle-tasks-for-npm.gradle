@@ -46,10 +46,11 @@ interface InjectedExecOps {
 task npmInstall(type: Exec) {
     dependsOn ":verifyNodeJS"
     inputs.file("package.json")
+    if (rootProject.hasProperty("releaseBuild")) inputs.file("package-lock.json")
     outputs.file("package-lock.json")
     outputs.dir("node_modules")
     commandLine npmExecutable
-    args "install"
+    args rootProject.hasProperty("releaseBuild") ? "ci" : "install"
 
     def injected = project.objects.newInstance(InjectedExecOps)
     def projectDir = project.projectDir

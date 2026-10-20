@@ -1,0 +1,46 @@
+import java.security.MessageDigest
+import groovy.json.JsonOutput
+
+def releaseVersion = file("release-version.txt").text.trim()
+if (!(releaseVersion ==~ /[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?/)) {
+    throw new GradleException("Invalid release-version.txt")
+}
+def releaseDirectory = layout.buildDirectory.dir("release")
+def archiveTasks = [
+    [cloud: "aws", project: ":aws:api-handler", zip: "lambda.zip", into: "lambdas", name: "api-handler.zip"],
+    [cloud: "azure", project: ":azure:function-app", zip: "function.zip", into: "", name: "function-app.zip"]
+].collect { config ->
+    tasks.register("release${config.cloud.capitalize()}Archive", Zip) {
+        dependsOn "${config.project}:build"
+        archiveFileName = "terraform-${config.cloud}.zip"
+        destinationDirectory = releaseDirectory
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+        // Explicit allowlist: never include state, credentials, or cached providers.
+        from("${config.cloud}/module") { include "**/*.tf" }
+        from("LICENSE")
+        from(project(config.project).layout.buildDirectory.file("dist/${config.zip}")) {
+            into config.into
+            rename { config.name }
+        }
+    }
+}
+tasks.register("prepareRelease") {
+    dependsOn archiveTasks
+    inputs.file("release-version.txt")
+    inputs.property("sourceRevision", providers.gradleProperty("sourceRevision").orElse("local"))
+    inputs.files(archiveTasks.collect { it.flatMap { task -> task.archiveFile } })
+    outputs.files(releaseDirectory.map { it.file("SHA256SUMS") }, releaseDirectory.map { it.file("release.json") })
+    doLast {
+        def files = archiveTasks.collect { it.get().archiveFile.get().asFile }.sort { it.name }
+        def hashes = files.collectEntries { f -> [(f.name): MessageDigest.getInstance("SHA-256").digest(f.bytes).encodeHex().toString()] }
+        def directory = releaseDirectory.get().asFile
+        new File(directory, "SHA256SUMS").text = hashes.collect { name, hash -> "${hash}  ${name}\n" }.join("")
+        new File(directory, "release.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([
+            version: releaseVersion,
+            revision: inputs.properties.sourceRevision,
+            runtimes: [aws: "nodejs26.x", azure: "24"],
+            sha256: hashes
+        ])) + "\n"
+    }
+}

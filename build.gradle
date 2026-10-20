@@ -1,8 +1,8 @@
 def moduleVersion = "1.4.1"
 
 def requiredVersionTerraform = "^1.10.0"
-def requiredVersionNodeJS = "^22.0.0"
-def requiredVersionTsc = "^5.0.0"
+def requiredVersionNodeJS = ">=22.0.0"
+def requiredVersionTsc = "7.0.2"
 
 allprojects {
     ext {
@@ -11,20 +11,29 @@ allprojects {
             ngExecutable = ["cmd", "/c", "ng"]
             npmExecutable = ["cmd", "/c", "npm"]
             terraformExecutable = ["cmd", "/c", "terraform"]
-            tscExecutable = ["cmd", "/c", "tsc"]
+            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
             gitExecutable = ["git"]
         } else {
             nodeExecutable = ["node"]
             ngExecutable = ["ng"]
             npmExecutable = ["npm"]
             terraformExecutable = ["terraform"]
-            tscExecutable = ["tsc"]
+            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
             gitExecutable = ["git"]
         }
     }
 }
 
 static def isSemVerMatching(String actual, String expected) {
+    if (expected.startsWith(">=")) {
+        def actualParts = actual.tokenize(".").collect { it as int }
+        def minimumParts = expected.substring(2).tokenize(".").collect { it as int }
+        for (int i = 0; i < 3; i++) {
+            if (actualParts[i] != minimumParts[i]) return actualParts[i] > minimumParts[i]
+        }
+        return true
+    }
+    if (!expected.startsWith("^") && !expected.startsWith("~")) return actual == expected
     def beginIndex
     def equalParts
 

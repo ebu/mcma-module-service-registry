@@ -1,7 +1,7 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-def McmaVersion = "1.1.4"
+def McmaVersion = "2.0.0"
 
 task setMcmaVersion {
     def packageJson = file("package.json")
@@ -114,6 +114,7 @@ task tsc(type: Exec) {
     inputs.file("package.json")
     inputs.file("tsconfig.json")
     inputs.file "${project.rootDir}/tsconfig.json"
+    inputs.file "${project.rootDir}/package-lock.json"
     outputs.dir("build/staging")
     commandLine tscExecutable
 

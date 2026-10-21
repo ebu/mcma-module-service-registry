@@ -31,14 +31,6 @@ for cloud, entry in [("aws", "lambdas/api-handler.zip"), ("azure", "function-app
         # A fresh consumer directory: no backend initialization, state, or cloud calls.
         with tempfile.TemporaryDirectory(prefix="mcma-release-") as directory:
             z.extractall(directory)
-            if cloud == "azure":
-                # Match the deployment pin introduced in commit 61a9289 for an
-                # AzAPI 2.8.0 bug. Override only this temporary validation fixture.
-                Path(directory, "compatibility_override.tf").write_text(
-                    'terraform {\n  required_providers {\n    azapi = {\n'
-                    '      source = "Azure/azapi"\n      version = "2.7.0"\n'
-                    '    }\n  }\n}\n'
-                )
             subprocess.run(["terraform", "init", "-backend=false", "-input=false", "-no-color"], cwd=directory, check=True)
             subprocess.run(["terraform", "validate", "-no-color"], cwd=directory, check=True)
     print(f"Verified {archive.name}: {digest}")

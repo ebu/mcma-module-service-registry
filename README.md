@@ -47,24 +47,6 @@ For Azure, use `terraform-azure.zip`. Terraform downloads and extracts the compl
 Version 2.0.0 requires AWS provider 6.69.1 or newer within major 6 and AzureRM 5.10.0 or newer within major 5. Existing deployments must run `terraform init -upgrade` in their deployment directory and review the plan before applying. Key Vault continues to use access policies. The archive checks validate provider schemas, not live cloud behavior.
 
 
-### AzAPI compatibility pin
-
-The deployment deliberately pins AzAPI to **2.7.0**. Commit `61a9289` (10 March 2026) records a bug in 2.8.0, without identifying the issue. Release archive validation uses a temporary Terraform override to select 2.7.0, matching deployment. The override is not shipped in the archive and does not modify deployment configuration or state. Passing schema validation with a newer provider does not demonstrate that the original runtime bug is fixed.
-
-The reusable module retains its minimum constraint, so consumers should preserve the known-working pin in their root configuration until the bug has been identified and an upgrade validated:
-
-```hcl
-terraform {
-  required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "2.7.0"
-    }
-  }
-}
-```
-
-
 ## Post-deployment endpoint check
 
 Run `./gradlew :scripts:post-deploy:run` (Windows: `.\gradlew.bat :scripts:post-deploy:run`) to refresh Terraform outputs and query registered services through both the AWS and Azure endpoints. Both checks are attempted, results are labeled by cloud, and any failure gives a nonzero exit status. This check uses the deployment's MCMA API key and does not print the Terraform output or API key. It performs read-only service queries and currently expects `McmaApiKey` authentication for each registry.
